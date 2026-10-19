@@ -1,0 +1,19 @@
+FYNVERA — GOOGLE ADSENSE PLACEHOLDER NOTES
+==========================================
+This starter project does not load Google advertising scripts and does not contain a publisher ID or ad slot IDs. No ads or earnings are active out of the box.
+
+Before adding AdSense:
+1. Publish a useful site with original, high-quality content and a real privacy policy, contact/about page, editorial policy and financial disclaimer.
+2. Apply to Google AdSense and wait for approval. Approval is Google's decision; revenue is never guaranteed.
+3. Once approved, copy your real publisher ID (ca-pub-...) and each ad unit's slot ID from AdSense.
+4. Use official Google AdSense instructions to add the AdSense loader script to index.html and put the matching <ins class="adsbygoogle"> ad unit into the desired slot. Do not paste made-up IDs.
+5. Add /ads.txt only using the exact seller record AdSense provides. Do not guess the publisher ID.
+6. Check the current Google policies, consent requirements (especially EEA/UK/Swiss visitors), privacy disclosures and placements on desktop and mobile.
+
+Recommended placeholder locations (CSS class .ad-slot-placeholder; search in App.jsx):
+- ADSLOT-HOME-001: below the top market snapshot / above latest articles.
+- ADSLOT-HOME-002: between topic cards and the workspace banner.
+- ADSLOT-ARTICLE-001: inside long-form article body after several paragraphs.
+- ADSLOT-ARTICLE-002: below an article / before recommended content.
+
+Keep ad space clearly separated from navigation, calculator controls and clickable editorial cards. Never encourage accidental clicks or put ad units inside buttons. Remove the placeholder message only when replacing it with an actual approved AdSense unit.
