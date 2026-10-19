@@ -1,0 +1,78 @@
+FYNVERA IMAGE GENERATION GUIDE
+==============================
+All filenames below are lowercase and must match exactly. Place every generated image into this public/images/ folder.
+The website has designed fallback artwork, so it still looks complete before you add your own images.
+The code marks each slot with a matching IMG ID in src/App.jsx.
+Recommended format: WebP or JPG for photos, PNG only if transparency is needed. Keep images compressed for fast pages.
+
+1) IMG-HERO-001
+Filename: hero-finance-dashboard.jpg
+Recommended size: 1600 x 1100 px (landscape 16:11); export WebP/JPG, target under 350 KB.
+Prompt: Premium editorial photograph for a modern international personal-finance and investing website, a sophisticated financial analytics screen with elegant upward market chart reflections, abstract blue glass architecture, subtle cyan highlights, deep navy and cool white palette, realistic lighting, crisp details, professional wealth management feel, clean negative space for text, no readable text, no logos, no watermark, landscape hero composition.
+
+2) IMG-ARTICLE-001
+Filename: article-wall-street-rally.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: High-end editorial finance news photograph of Wall Street in New York, recognizable stock-exchange district architecture and a street sign, American flags in the distance, city light reflections, subtle financial-market atmosphere, deep blue and cyan color grade with white highlights, realistic photography, wide horizontal composition, no legible lettering, no brand logo, no watermark.
+
+3) IMG-ARTICLE-002
+Filename: article-compound-interest.jpg
+Recommended size: 1200 x 750 px (16:10); target under 220 KB.
+Prompt: Editorial still life about long-term savings and compound interest, a small plant growing beside a glass savings jar, soft blue notebook and calculator, clean modern desk, natural side lighting, dark navy shadows with crisp white and cyan accents, calm premium personal-finance magazine aesthetic, realistic photography, horizontal crop, no readable text, no logos, no watermark.
+
+4) IMG-ARTICLE-003
+Filename: article-crypto-risk.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Professional editorial illustration-photograph for a crypto safety article, a metallic abstract digital coin on a dark glass surface, secure digital network lines and subtle cyan data glow, balanced deep navy and cobalt blue with restrained warm-gold detail, sophisticated non-hype mood, realistic material textures, wide horizontal composition, no letters, no logos, no watermark.
+
+5) IMG-ARTICLE-004
+Filename: article-forex-basics.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Editorial finance photograph representing global currency exchange and forex fundamentals, world map reflected on glass with abstract currency coin shapes and a professional trading screen softly out of focus, deep blue and white palette with subtle cyan highlights, realistic premium financial publication style, horizontal layout, no readable numbers, no logos, no watermark.
+
+6) IMG-OG-001
+Filename: og-finance-cover.jpg
+Recommended size: 1200 x 630 px (1.91:1); target under 200 KB.
+Prompt: Open Graph social-share cover for Fynvera, premium modern finance and investing publication, deep navy background, clean white and electric-cyan abstract rising market line with restrained geometric grid, leave broad empty space on left for a brand title to be added later, sleek sophisticated look, no generated words, no logos, no watermark, 1200 by 630 landscape.
+
+OPTIONAL ARTICLE IMAGES
+-----------------------
+For every newly published article, use a unique descriptive filename such as article-retirement-planning.jpg and upload it from Workspace > News & Insights. Supabase mode uploads article images to the article-images bucket; preview mode keeps uploaded files in this browser only.
+
+HOW TO REPLACE A PLACEHOLDER
+----------------------------
+- Generate or download the image to your computer.
+- Copy the file into public/images/ and use the exact filename above.
+- The homepage hero and article cards will display the matching file automatically.
+- To use a different filename, update the src path in src/App.jsx near the matching IMG ID.
+- Never add an image ID as a filename by itself. IDs are labels in the code; filenames are listed above.
+
+7) IMG-ARTICLE-005
+Filename: article-investing-plan.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Premium editorial photograph illustrating long-term investing, neat desk with a notebook showing abstract unlabelled charts, a pen, a small green plant and a laptop with soft-focus blue financial charts, confident calm mood, navy blue, white and cyan accents, realistic photography, horizontal composition, no readable text, logos or watermark.
+
+8) IMG-ARTICLE-006
+Filename: article-real-estate.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Sophisticated real-estate finance editorial photograph, modern townhouse and city apartments at blue hour with warm interior window lights, clean architectural lines, subtle navy and cyan color grade, realistic professional photography, high detail, balanced empty space, horizontal composition, no signage, no logos, no watermark.
+
+9) IMG-ARTICLE-007
+Filename: article-commodities.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Premium commodities markets editorial still life, polished gold bar and understated silver coin on a dark slate desk with abstract warehouse and logistics reflections in background, restrained gold accents against deep navy and cool white, realistic material detail, trustworthy finance magazine aesthetic, horizontal crop, no readable words, no logos, no watermark.
+
+10) IMG-ARTICLE-008
+Filename: article-inflation.jpg
+Recommended size: 1200 x 750 px (16:10); target under 230 KB.
+Prompt: Editorial still life for an economics explainer, small grocery paper bag, a few everyday grocery items, receipt with blank unreadable marks, simple calculator and notebook on a clean dark-blue table, cool daylight, restrained cyan and white highlights, realistic publication photography, horizontal layout, no readable text, no logo, no watermark.
+
+11) IMG-ARTICLE-009
+Filename: article-finance-glossary.jpg
+Recommended size: 1200 x 750 px (16:10); target under 220 KB.
+Prompt: Modern financial education editorial image, open plain notebook, carefully arranged index cards with abstract geometric marks, blue pen and subtle glass magnifying lens on a deep navy desk, bright white and cyan highlights, calm organized learning mood, realistic photography, horizontal composition, no words, no letters, no logo, no watermark.
+
+12) IMG-ARTICLE-010
+Filename: article-regulation.jpg
+Recommended size: 1200 x 750 px (16:10); target under 250 KB.
+Prompt: Premium editorial image about financial consumer protection and regulation, elegant courthouse or institutional columns with a subtle glass shield motif and abstract blue document shapes in the foreground, deep navy and white palette with cyan highlights, trustworthy balanced realistic photography, horizontal composition, no readable text, no seals, no logos, no watermark.
