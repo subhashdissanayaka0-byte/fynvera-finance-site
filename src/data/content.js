@@ -137,8 +137,17 @@ export const workspaceItems = [
   { label: 'Tools & Calculators', icon: 'Calculator' },
   { label: 'Regulatory Policy', icon: 'Scale' },
   { label: 'Settings', icon: 'Settings2' },
+  { label: 'Author Profile', icon: 'BadgeCheck' },
   { label: 'Log Out', icon: 'LogOut', special: true }
 ];
+
+// Add the real FYNVERA account URLs here when they are ready. Empty URLs stay hidden in the footer.
+export const siteSocialLinks = {
+  x: '',       // Example: https://x.com/yourhandle
+  tiktok: '',  // Example: https://www.tiktok.com/@yourhandle
+  facebook: '',// Example: https://www.facebook.com/yourpage
+  telegram: '' // Example: https://t.me/yourchannel
+};
 
 export const calculatorList = [
   { id: 'compound', name: 'Compound Interest', icon: 'TrendingUp', description: 'Project growth on savings and investments', group: 'Investing' },

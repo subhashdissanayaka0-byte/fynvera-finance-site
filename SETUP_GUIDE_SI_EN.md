@@ -45,12 +45,22 @@ VITE_SITE_URL=http://localhost:5173
 ```
 
 6. Supabase Dashboard → SQL Editor → New query වෙත ගොස් `supabase/schema.sql` file එකේ content එක paste කර Run කරන්න. Tables සහ Row Level Security (RLS) policies හදනවා.
-7. Supabase → Storage වෙත ගිහින් `avatars` සහ `article-images` නමින් buckets දෙකක් හදන්න. මේ starter project එකේ public page එකේ photos පෙන්වන්න buckets public ලෙස සකස් කරලා, upload permissions user-owned folder එකට සීමා කරන policies schema එකේ තිබෙනවා.
-8. Supabase → Authentication → URL Configuration වෙත ගිහින් Site URL එක `http://localhost:5173` ලෙස දාන්න. Production deploy කළාට පස්සේ Site URL සහ Redirect URLs වෙත public website domain එකත් add කරන්න.
-9. Email sign-up confirmation සක්‍රියද කියලා Authentication → Providers / Email settings වලින් බලන්න. Email templates සහ SMTP rules සඳහා Supabase හි current instructions බලන්න.
-10. Google login අවශ්‍ය නම් Google Cloud Console තුළ OAuth Client ID/secret create කර Supabase Authentication → Providers → Google තුළ configure කරන්න. Supabase පෙන්වන callback URL එක Google provider එකේ redirect URI ලෙසත් දාන්න. Supabase redirect URL allow list එකට localhost සහ live domain දෙකම ඇතුළත් කරන්න.
-11. Local server එක stop කර `npm run dev` නැවත run කරන්න.
-12. GitHub එකට push කළාට පස්සේ, hosting settings තුළ `VITE_SUPABASE_URL` සහ `VITE_SUPABASE_ANON_KEY` environment variables add කර redeploy කරන්න. `.env` GitHub එකට commit කරන්න එපා.
+7. අලුත් community features සඳහා ඊළඟට `supabase/community_update.sql` file එකේ content එක වෙනම query එකක paste කර Run කරන්න. මේ migration එක existing tables drop/rename කරන්නේ නැහැ; author profiles, reactions, comments, follows සහ aggregate-count functions එකතු කරනවා.
+8. Supabase → Storage වෙත ගිහින් `avatars` සහ `article-images` නමින් buckets දෙකක් හදන්න. මේ starter project එකේ public page එකේ photos පෙන්වන්න buckets public ලෙස සකස් කරලා, upload permissions user-owned folder එකට සීමා කරන policies schema එකේ තිබෙනවා.
+9. Supabase → Authentication → URL Configuration වෙත ගිහින් Site URL එක `http://localhost:5173` ලෙස දාන්න. Production deploy කළාට පස්සේ Site URL සහ Redirect URLs වෙත public website domain එකත් add කරන්න.
+10. Email sign-up confirmation සක්‍රියද කියලා Authentication → Providers / Email settings වලින් බලන්න. Email templates සහ SMTP rules සඳහා Supabase හි current instructions බලන්න.
+11. Google login අවශ්‍ය නම් Google Cloud Console තුළ OAuth Client ID/secret create කර Supabase Authentication → Providers → Google තුළ configure කරන්න. Supabase පෙන්වන callback URL එක Google provider එකේ redirect URI ලෙසත් දාන්න. Supabase redirect URL allow list එකට localhost සහ live domain දෙකම ඇතුළත් කරන්න.
+12. Local server එක stop කර `npm run dev` නැවත run කරන්න.
+13. GitHub එකට push කළාට පස්සේ, hosting settings තුළ `VITE_SUPABASE_URL` සහ `VITE_SUPABASE_ANON_KEY` environment variables add කර redeploy කරන්න. `.env` GitHub එකට commit කරන්න එපා.
+
+### Public reading, private workspace සහ community
+
+- Visitors can read public articles without registering. The Dashboard/workspace is gated behind signup/sign-in.
+- Sign-up with email may require email verification. Verify the email, then sign in; the workspace opens only after a real session is available in production.
+- Likes/dislikes, cross-device comments, follow/unfollow and author profile data require Supabase setup and the `community_update.sql` migration. Article save uses the existing private `watchlist` table.
+- Live crypto tickers use Binance public Spot streams for BTC, ETH, BNB, SOL, XRP, ADA, DOGE, LINK, TRX and AVAX in USDT. No Binance API key is used. Other market panels remain sample data. See [Binance's public market-data URLs](https://github.com/binance/binance-spot-api-docs/blob/master/faqs/market_data_only.md). The new tables use Supabase RLS policies and matching grants; see the [official RLS guide](https://supabase.com/docs/guides/database/postgres/row-level-security).
+- Add your official social profile URLs in `src/data/content.js` under `siteSocialLinks`. Leave values empty until you have the real URLs; the footer hides blank social links. Author-specific social URLs can be saved in Workspace → Author Profile.
+- The RAR archive used for this update did not include generated image files; do not delete or overwrite your already-uploaded `public/images` files on GitHub when merging the code changes.
 
 ## D. Images ඔබ generate කර folder එකට add කරන විදිහ
 
@@ -73,7 +83,7 @@ Workspace → News & Insights → Publish an article වෙත යන්න. Hea
 
 - Passwords, bank logins, card numbers, private brokerage keys `notes` field එකට දාන්න එපා.
 - Financial data සඳහා RLS enabled තබන්න; client එකේ service-role key කිසිවිටෙක භාවිත කරන්න එපා.
-- Sample market prices live values නොවේ. Live quotes ඕන නම් later licensed market data provider/API එකක් අවශ්‍ය විය හැක; දැනට site එකට ඒ කිසිවක් connect කරලා නැහැ.
+- Crypto ticker values use Binance public Spot data. Index, forex and commodity values remain examples, not live quotes. Binance public-market data access is separate from trading; do not add trading credentials.
 - AdSense account approval, publisher ID, ad slot IDs, privacy policy/cookie consent, tax disclosures සහ ad policies පිළිබඳ `ADSENSE_SETUP.txt` කියවන්න.
 
 ### Enable article publishing only for your own editor account

@@ -1,9 +1,53 @@
 // Main application: navigation, articles, workspace, calculators, demo mode and optional Supabase integration.
 import React, { useEffect, useMemo, useState } from 'react';
 import * as Lucide from 'lucide-react';
-import { categories, calculatorList, markets, seedArticles, workspaceItems } from './data/content.js';
+import { categories, calculatorList, markets, seedArticles, workspaceItems, siteSocialLinks } from './data/content.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadLocal, saveLocal } from './lib/storage.js';
+
+// Public Binance market data only: these symbols do not require an API key or account credentials.
+const BINANCE_COINS = [
+  { symbol: 'BTC', name: 'Bitcoin', color: '#ffab3e' },
+  { symbol: 'ETH', name: 'Ethereum', color: '#7ea8ff' },
+  { symbol: 'BNB', name: 'BNB', color: '#ffc44d' },
+  { symbol: 'SOL', name: 'Solana', color: '#9e8cff' },
+  { symbol: 'XRP', name: 'XRP', color: '#8db3d8' },
+  { symbol: 'ADA', name: 'Cardano', color: '#5d91ff' },
+  { symbol: 'DOGE', name: 'Dogecoin', color: '#d8c46a' },
+  { symbol: 'LINK', name: 'Chainlink', color: '#6b9cff' },
+  { symbol: 'TRX', name: 'TRON', color: '#f46e7b' },
+  { symbol: 'AVAX', name: 'Avalanche', color: '#f08080' }
+];
+const BINANCE_SYMBOLS = BINANCE_COINS.map((coin) => `${coin.symbol}USDT`);
+
+function formatCryptoPrice(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: number < 1 ? 6 : number < 100 ? 4 : 2
+  }).format(number);
+}
+
+function formatCryptoChange(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return '—';
+  return `${number > 0 ? '+' : ''}${number.toFixed(2)}%`;
+}
+
+function cryptoTickerRow(coin, cryptoPrices = {}) {
+  const ticker = cryptoPrices[`${coin.symbol}USDT`];
+  const change = Number(ticker?.priceChangePercent || 0);
+  return {
+    symbol: coin.symbol,
+    name: coin.name,
+    value: ticker ? `$${formatCryptoPrice(ticker.lastPrice)}` : 'Connecting…',
+    change: ticker ? formatCryptoChange(change) : '—',
+    positive: change >= 0,
+    color: coin.color,
+    isLive: Boolean(ticker)
+  };
+}
 
 // Use one safe icon wrapper so a typo in an icon name never breaks the page.
 function Icon({ name, size = 18, ...props }) {
@@ -62,6 +106,7 @@ function Brand({ onClick }) {
 function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activeView }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [openMoreCategory, setOpenMoreCategory] = useState(null);
   const mainLinks = [
     { label: 'Home', action: onHome },
     { label: 'Investing', action: () => onCategory('Investing') },
@@ -86,7 +131,7 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
                   <button className={`nav-link ${activeView === item.label ? 'nav-link-active' : ''}`} onClick={() => { item.action(); setOpenDropdown(null); setMobileOpen(false); }}>{item.label}</button>
                   {hasSubcategories && <button className="nav-dropdown-toggle" aria-label={`Show ${item.label} subcategories`} aria-expanded={isOpen} onClick={() => setOpenDropdown((current) => current === item.label ? null : item.label)}><Icon name="ChevronDown" size={13} /></button>}
                 </div>
-                {hasSubcategories && isOpen && <div className="nav-dropdown">
+                {hasSubcategories && <div className={`nav-dropdown ${isOpen ? 'nav-dropdown-open' : ''}`}>
                   <button className="nav-dropdown-all" onClick={() => { onCategory(item.label); setOpenDropdown(null); setMobileOpen(false); }}>All {item.label}<Icon name="ArrowUpRight" size={14} /></button>
                   {category.subcategories.map((subcategory) => <button key={subcategory} onClick={() => { onCategory(item.label, subcategory); setOpenDropdown(null); setMobileOpen(false); }}>{subcategory}<Icon name="ChevronRight" size={14} /></button>)}
                 </div>}
@@ -95,7 +140,7 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
           })}
           <div className={`more-nav-wrap ${openDropdown === 'More' ? 'more-nav-open' : ''}`}>
             <button className="nav-link" onClick={() => setOpenDropdown((current) => current === 'More' ? null : 'More')} aria-expanded={openDropdown === 'More'}>More <Icon name="ChevronDown" size={13} /></button>
-            {openDropdown === 'More' && <div className="nav-dropdown">{categories.filter((item) => !mainLinks.some((nav) => nav.label === item.name)).map((item) => <button key={item.name} onClick={() => { onCategory(item.name); setOpenDropdown(null); setMobileOpen(false); }}>{item.name}<Icon name="ArrowUpRight" size={14} /></button>)}</div>}
+            {openDropdown === 'More' && <div className="nav-dropdown more-category-dropdown">{categories.filter((item) => !mainLinks.some((nav) => nav.label === item.name)).map((item) => <div key={item.name} className={`more-subcategory-wrap ${openMoreCategory === item.name ? 'more-subcategory-open' : ''}`}><div className="more-category-row"><button className="more-category-link" onClick={() => { onCategory(item.name); setOpenDropdown(null); setMobileOpen(false); }}>{item.name}<Icon name="ArrowUpRight" size={14} /></button><button className="more-category-toggle" aria-label={`Show ${item.name} subcategories`} aria-expanded={openMoreCategory === item.name} onClick={() => setOpenMoreCategory((current) => current === item.name ? null : item.name)}><Icon name="ChevronRight" size={14}/></button></div><div className="more-subdropdown"><button onClick={() => { onCategory(item.name); setOpenDropdown(null); setOpenMoreCategory(null); setMobileOpen(false); }}>All {item.name}<Icon name="ArrowUpRight" size={14}/></button>{item.subcategories.map((subcategory) => <button key={subcategory} onClick={() => { onCategory(item.name, subcategory); setOpenDropdown(null); setOpenMoreCategory(null); setMobileOpen(false); }}>{subcategory}<Icon name="ChevronRight" size={14}/></button>)}</div></div>)}</div>}
           </div>
         </nav>
         <div className="header-actions">
@@ -134,9 +179,9 @@ function SectionTitle({ eyebrow, title, description, actionLabel, onAction }) {
   );
 }
 
-function MarketPanel({ compact = false, onOpenMarkets }) {
+function MarketPanel({ compact = false, onOpenMarkets, cryptoPrices = {}, cryptoStatus = 'connecting' }) {
   const [tab, setTab] = useState('Indices');
-  const rows = tab === 'Crypto' ? markets.filter((item) => ['BTC', 'ETH'].includes(item.symbol)) : tab === 'Commodities' ? markets.filter((item) => item.symbol === 'GLD') : tab === 'Forex' ? [
+  const rows = tab === 'Crypto' ? BINANCE_COINS.map((coin) => cryptoTickerRow(coin, cryptoPrices)) : tab === 'Commodities' ? markets.filter((item) => item.symbol === 'GLD') : tab === 'Forex' ? [
     { symbol: 'EUR/USD', name: 'EUR / USD', value: '1.0842', change: '+0.18%', positive: true, color: '#5d91ff' },
     { symbol: 'GBP/USD', name: 'GBP / USD', value: '1.2941', change: '+0.22%', positive: true, color: '#42c6fb' },
     { symbol: 'USD/JPY', name: 'USD / JPY', value: '149.20', change: '-0.12%', positive: false, color: '#9e8cff' }
@@ -147,14 +192,16 @@ function MarketPanel({ compact = false, onOpenMarkets }) {
       <div className="market-tabs" role="tablist" aria-label="Market type">
         {['Indices', 'Forex', 'Crypto', 'Commodities'].map((item) => <button key={item} role="tab" aria-selected={tab === item} className={tab === item ? 'market-tab-active' : ''} onClick={() => setTab(item)}>{item}</button>)}
       </div>
-      <div className="market-rows">
+      <div className={`market-rows ${tab === 'Crypto' ? 'market-rows-live-crypto' : ''}`}>
         {rows.map((item) => <div className="market-row" key={item.symbol}>
           <span className="market-symbol" style={{ '--symbol-color': item.color }}>{item.symbol.slice(0, 1)}</span>
           <span className="market-name">{item.name}</span><strong>{item.value}</strong>
           <span className={`market-change ${item.positive ? 'positive' : 'negative'}`}><Icon name={item.positive ? 'TrendingUp' : 'TrendingDown'} size={14} />{item.change}</span>
         </div>)}
       </div>
-      <div className="sample-data-note"><Icon name="Info" size={12} /> Sample values for preview — not live market data</div>
+      {tab === 'Crypto'
+        ? <div className="sample-data-note market-live-note"><span className={`live-dot ${cryptoStatus === 'live' ? '' : 'live-dot-muted'}`} />{cryptoStatus === 'live' ? 'Live Binance Spot data · USDT pairs · prices update automatically' : cryptoStatus === 'snapshot' ? 'Binance market snapshot loaded · reconnecting to live updates' : 'Connecting to Binance live market data…'}</div>
+        : <div className="sample-data-note"><Icon name="Info" size={12} /> Sample values for preview — not live market data</div>}
     </section>
   );
 }
@@ -176,7 +223,7 @@ function ArticleCard({ article, onOpen, featured = false, onToggleWatch, watched
   );
 }
 
-function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, onShare }) {
+function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, onShare, user, onAuth, showToast, cryptoPrices = {}, cryptoStatus = 'connecting' }) {
   const articleText = Array.isArray(article.body) ? article.body : String(article.body || '').split('\n\n').filter(Boolean);
   return (
     <main className="article-detail page-wrap fade-in">
@@ -192,14 +239,15 @@ function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, on
           <div className="article-toolbar"><span><Icon name="BookOpenText" size={16} /> Reading guide</span><div><button className={`button button-soft button-small ${watched ? 'button-soft-active' : ''}`} onClick={() => onToggleWatch(article)}><Icon name={watched ? 'BookmarkCheck' : 'Bookmark'} size={15} />{watched ? 'Saved' : 'Save article'}</button><button className="button button-soft button-small" onClick={() => onShare(article)}><Icon name="Share2" size={15} />Share</button></div></div>
           <div className="article-body-copy">{articleText.map((paragraph, index) => <React.Fragment key={`${article.id}-${index}`}><p>{paragraph}</p>{index === 1 && <AdSlot id="ADSLOT-ARTICLE-001" format="article"/>}</React.Fragment>)}<div className="disclaimer-block"><Icon name="ShieldCheck" size={19} /><p><strong>Important note</strong><br />This content is for general education only. It is not personal financial, investment, tax or legal advice. Market values and examples may be illustrative.</p></div></div>
           <div className="keyword-tags">{(article.keywords || []).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>#{keyword.replaceAll(' ', '')}</button>)}</div>
+          <ArticleCommunity article={article} user={user} onAuth={onAuth} showToast={showToast}/>
         </article>
-        <aside className="article-aside"><MarketPanel compact onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{(article.author || 'F').slice(0, 1)}</div><div><h3>{article.author || 'Fynvera Editorial'}</h3><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p><button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
+        <aside className="article-aside"><MarketPanel compact cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{(article.author || 'F').slice(0, 1)}</div><div><h3>{article.author || 'Fynvera Editorial'}</h3><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p>{article.authorId && <FollowAuthorButton targetId={article.authorId} user={user} authorName={article.author} onAuth={onAuth} showToast={showToast}/>}<button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
       </div>
     </main>
   );
 }
 
-function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculator, onAllCalculators, onToggleWatch, watchlist }) {
+function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculator, onAllCalculators, onToggleWatch, watchlist, cryptoPrices = {}, cryptoStatus = 'connecting' }) {
   const feature = articles[0] || seedArticles[0];
   return (
     <main className="page-wrap home-page">
@@ -219,7 +267,7 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
         </section>
       </div>
 
-      <div className="market-ticker"><div className="ticker-label"><span className="live-dot" /> MARKET SNAPSHOT</div><div className="ticker-items">{markets.slice(0, 5).map((item) => <div key={item.symbol} className="ticker-item"><span>{item.name}</span><strong>{item.value}</strong><em className={item.positive ? 'positive' : 'negative'}>{item.change}</em></div>)}</div><span className="ticker-demo">DEMO DATA</span></div>
+      <div className="market-ticker"><div className="ticker-label"><span className="live-dot" /> MARKET SNAPSHOT</div><div className="ticker-items">{markets.slice(0, 5).map((item) => { const cryptoSymbol = ['BTC', 'ETH'].includes(item.symbol); const ticker = cryptoSymbol ? cryptoPrices[`${item.symbol}USDT`] : null; const move = Number(ticker?.priceChangePercent ?? (item.change || '0').replace('%', '')); return <div key={item.symbol} className="ticker-item"><span>{item.name}{ticker ? ' · LIVE' : cryptoSymbol ? ' · connecting' : ' · sample'}</span><strong>{ticker ? `$${formatCryptoPrice(ticker.lastPrice)}` : cryptoSymbol ? 'Connecting…' : item.value}</strong><em className={move >= 0 ? 'positive' : 'negative'}>{ticker ? formatCryptoChange(move) : cryptoSymbol ? '—' : item.change}</em></div>; })}</div><span className="ticker-demo">CRYPTO: BINANCE LIVE · INDICES: SAMPLE</span></div>
       <AdSlot id="ADSLOT-HOME-001" format="wide"/>
 
       <section className="home-feature-section section-gap">
@@ -228,19 +276,24 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
           <div className="feature-story-card"><button className="feature-image-button" onClick={() => onOpenArticle(feature)}><ImageSlot id={feature.imageId || 'IMG-ARTICLE-001'} src={feature.image} alt={feature.title} className="feature-story-image" /></button><div className="feature-story-info"><div className="article-meta"><span>{feature.category}</span><span className="meta-dot" /><span>{formatDate(feature.date)}</span><span className="meta-dot" /><span>{feature.readTime || 5} min read</span></div><button className="article-title-button" onClick={() => onOpenArticle(feature)}><h3>{feature.title}</h3></button><p>{feature.excerpt}</p><div className="feature-story-bottom"><span className="author-mini"><span className="author-initial">{(feature.author || 'F').slice(0, 1)}</span>By {feature.author || 'Fynvera Editorial'}</span><button className="circle-arrow" onClick={() => onOpenArticle(feature)} aria-label="Read featured article"><Icon name="ArrowUpRight" size={20} /></button></div></div></div>
           <div className="latest-card-grid">{articles.slice(1, 4).map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)} />)}</div>
         </div>
-        <aside className="home-sidebar"><MarketPanel onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel trade-cta"><div className="trade-cta-copy"><span className="eyebrow">PLAN WITH PURPOSE</span><h3>Your money journey, all in one place.</h3><p>Track ideas, organize your goals and learn as you go.</p><button className="button button-primary" onClick={onWorkspace}>Explore Workspace <Icon name="ArrowRight" size={16} /></button></div><div className="trade-art"><div className="phone-art"><div className="phone-speaker"/><div className="phone-screen-label">TOTAL VALUE</div><strong>$24,580</strong><svg viewBox="0 0 120 70"><path d="M2 58 L18 48 L29 52 L43 34 L53 40 L68 19 L79 25 L98 12 L118 5" fill="none" stroke="#26d6e7" strokeWidth="2.7"/><path d="M2 58 L18 48 L29 52 L43 34 L53 40 L68 19 L79 25 L98 12 L118 5 L118 70 L2 70 Z" fill="#26d6e7" opacity=".14"/></svg></div></div></div><div className="panel calculator-promo"><div className="panel-heading"><div className="heading-icon"><Icon name="Calculator" size={20} /></div><h3>Tools that make sense</h3><button className="text-link text-link-small" onClick={onAllCalculators}>View all <Icon name="ArrowRight" size={14} /></button></div><div className="calculator-mini-grid">{calculatorList.slice(0, 4).map((calc) => <button key={calc.id} className="calculator-mini" onClick={() => onCalculator(calc.id)}><span><Icon name={calc.icon} size={18} /></span><strong>{calc.name}</strong><small>{calc.description}</small></button>)}</div></div></aside>
+        <aside className="home-sidebar"><MarketPanel cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel trade-cta"><div className="trade-cta-copy"><span className="eyebrow">PLAN WITH PURPOSE</span><h3>Your money journey, all in one place.</h3><p>Track ideas, organize your goals and learn as you go.</p><button className="button button-primary" onClick={onWorkspace}>Explore Workspace <Icon name="ArrowRight" size={16} /></button></div><div className="trade-art"><div className="phone-art"><div className="phone-speaker"/><div className="phone-screen-label">TOTAL VALUE</div><strong>$24,580</strong><svg viewBox="0 0 120 70"><path d="M2 58 L18 48 L29 52 L43 34 L53 40 L68 19 L79 25 L98 12 L118 5" fill="none" stroke="#26d6e7" strokeWidth="2.7"/><path d="M2 58 L18 48 L29 52 L43 34 L53 40 L68 19 L79 25 L98 12 L118 5 L118 70 L2 70 Z" fill="#26d6e7" opacity=".14"/></svg></div></div></div><div className="panel calculator-promo"><div className="panel-heading"><div className="heading-icon"><Icon name="Calculator" size={20} /></div><h3>Tools that make sense</h3><button className="text-link text-link-small" onClick={onAllCalculators}>View all <Icon name="ArrowRight" size={14} /></button></div><div className="calculator-mini-grid">{calculatorList.slice(0, 4).map((calc) => <button key={calc.id} className="calculator-mini" onClick={() => onCalculator(calc.id)}><span><Icon name={calc.icon} size={18} /></span><strong>{calc.name}</strong><small>{calc.description}</small></button>)}</div></div></aside>
       </section>
 
       <section className="category-section section-gap"><SectionTitle eyebrow="EXPLORE YOUR INTERESTS" title="One home for every money topic" description="Start with a subject you care about. Learn the basics, then go deeper." actionLabel="Browse all topics" onAction={() => onCategory('Education')} /><div className="category-grid">{categories.slice(0, 8).map((category) => <button key={category.name} className={`category-tile tone-${category.color}`} onClick={() => onCategory(category.name)}><span className="category-tile-icon"><Icon name={category.icon} size={21} /></span><strong>{category.name}</strong><small>{category.subcategories.slice(0, 2).join(' · ')}</small><span className="category-arrow"><Icon name="ArrowUpRight" size={16} /></span></button>)}</div></section>
       <AdSlot id="ADSLOT-HOME-002" format="wide"/>
 
       <section className="workspace-banner section-gap"><div className="workspace-banner-orbit"/><div className="workspace-banner-copy"><div className="eyebrow"><span /> YOUR PRIVATE FINANCE SPACE</div><h2>A clearer picture of your financial life.</h2><p>Bring your watchlist, portfolio notes, money goals and saved reads into one personal workspace.</p><div className="workspace-banner-actions"><button className="button button-primary button-large" onClick={onWorkspace}>Open your workspace <Icon name="ArrowRight" size={17} /></button><span><Icon name="LockKeyhole" size={15} /> Private by design when connected to your account</span></div></div><div className="workspace-preview-card"><div className="preview-card-head"><span>MY OVERVIEW</span><span className="preview-status"><i/> DEMO</span></div><div className="preview-total"><small>Portfolio tracker</small><strong>$18,420.00</strong><span className="positive"><Icon name="TrendingUp" size={14}/> +6.4% <em>illustrative</em></span></div><div className="preview-bars"><i style={{ height: '38%' }}/><i style={{ height: '56%' }}/><i style={{ height: '48%' }}/><i style={{ height: '72%' }}/><i style={{ height: '64%' }}/><i style={{ height: '87%' }}/><i style={{ height: '76%' }}/><i style={{ height: '100%' }}/></div><div className="preview-card-foot"><span><i className="preview-dot preview-dot-blue"/> Investments</span><span><i className="preview-dot preview-dot-cyan"/> Savings goals</span></div></div></section>
-      <footer className="site-footer"><div className="footer-main"><Brand onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/><p>Financial knowledge for a more confident future.</p><div className="footer-socials"><span>Global audience · English edition</span></div></div><div className="footer-links"><div><strong>Explore</strong>{['Stock Market', 'Investing', 'Crypto', 'Forex'].map((item) => <button key={item} onClick={() => onCategory(item)}>{item}</button>)}</div><div><strong>Money</strong>{['Personal Finance', 'Real Estate', 'Commodities', 'Education'].map((item) => <button key={item} onClick={() => onCategory(item)}>{item}</button>)}</div><div><strong>Tools</strong><button onClick={onCalculator}>Financial calculators</button><button onClick={onWorkspace}>Your workspace</button><button onClick={() => onCategory('Regulatory Policy')}>Policy & disclosures</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Fynvera. Educational content only.</span><nav className="footer-legal-links" aria-label="Legal links"><a href="/about.html">About</a><a href="/privacy-policy.html">Privacy</a><a href="/terms-of-use.html">Terms</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/financial-disclaimer.html">Disclaimer</a><a href="/contact.html">Contact</a></nav></div></footer>
+      <footer className="site-footer"><div className="footer-main"><Brand onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}/><p>Financial knowledge for a more confident future.</p><div className="footer-socials"><span>Global audience · English edition</span><div className="site-social-links">{[
+          { label: 'X', url: siteSocialLinks.x, icon: 'AtSign' },
+          { label: 'TikTok', url: siteSocialLinks.tiktok, icon: 'Music2' },
+          { label: 'Facebook', url: siteSocialLinks.facebook, icon: 'Facebook' },
+          { label: 'Telegram', url: siteSocialLinks.telegram, icon: 'Send' }
+        ].filter((link) => Boolean(link.url)).map((link) => <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" aria-label={`Fynvera on ${link.label}`} title={link.label}><Icon name={link.icon} size={16}/></a>)}</div></div></div><div className="footer-links"><div><strong>Explore</strong>{['Stock Market', 'Investing', 'Crypto', 'Forex'].map((item) => <button key={item} onClick={() => onCategory(item)}>{item}</button>)}</div><div><strong>Money</strong>{['Personal Finance', 'Real Estate', 'Commodities', 'Education'].map((item) => <button key={item} onClick={() => onCategory(item)}>{item}</button>)}</div><div><strong>Tools</strong><button onClick={onCalculator}>Financial calculators</button><button onClick={onWorkspace}>Your workspace</button><button onClick={() => onCategory('Regulatory Policy')}>Policy & disclosures</button></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Fynvera. Educational content only.</span><nav className="footer-legal-links" aria-label="Legal links"><a href="/about.html">About</a><a href="/privacy-policy.html">Privacy</a><a href="/terms-of-use.html">Terms</a><a href="/editorial-policy.html">Editorial Policy</a><a href="/financial-disclaimer.html">Disclaimer</a><a href="/contact.html">Contact</a></nav></div></footer>
     </main>
   );
 }
 
-function CategoryPage({ category, initialSubcategory = 'All', articles, onOpenArticle, onCategory, onToggleWatch, watchlist, onWorkspace, onCalculator }) {
+function CategoryPage({ category, initialSubcategory = 'All', articles, onOpenArticle, onCategory, onToggleWatch, watchlist, onWorkspace, onCalculator, cryptoPrices = {}, cryptoStatus = 'connecting' }) {
   const selected = categories.find((item) => item.name === category) || categories[0];
   const [selectedSub, setSelectedSub] = useState(initialSubcategory);
   useEffect(() => setSelectedSub(initialSubcategory || 'All'), [category, initialSubcategory]);
@@ -250,7 +303,7 @@ function CategoryPage({ category, initialSubcategory = 'All', articles, onOpenAr
     <main className="page-wrap category-page fade-in">
       <div className={`category-hero tone-${selected.color}`}><div className="category-hero-copy"><div className="breadcrumbs"><button onClick={() => onCategory('Home')}>Home</button><Icon name="ChevronRight" size={13}/><span>{selected.name}</span></div><span className="category-label">FYNVERA TOPICS</span><h1>{selected.name}<br/><span>made clearer.</span></h1><p>Understand the trends, concepts and practical decisions shaping {selected.name.toLowerCase()} with useful guides and approachable analysis.</p><div className="category-hero-actions"><button className="button button-primary" onClick={() => onCalculator()}>Explore calculators <Icon name="ArrowRight" size={16}/></button><button className="button button-ghost" onClick={onWorkspace}>Open workspace</button></div></div><div className="category-hero-art"><div className="category-art-ring ring-a"/><div className="category-art-ring ring-b"/><div className="category-art-icon"><Icon name={selected.icon} size={58}/></div><div className="category-art-chip chip-a"><Icon name="ShieldCheck" size={15}/> Learn with context</div><div className="category-art-chip chip-b"><Icon name="ChartNoAxesCombined" size={15}/> Make informed choices</div></div></div>
       <div className="subcategory-row"><strong>Explore {selected.name}</strong><div className="subcategory-chips"><button className={selectedSub === 'All' ? 'subcategory-active' : ''} onClick={() => setSelectedSub('All')}>All topics</button>{selected.subcategories.map((sub) => <button key={sub} className={selectedSub === sub ? 'subcategory-active' : ''} onClick={() => setSelectedSub(sub)}>{sub}</button>)}</div></div>
-      <div className="category-content-grid"><div><SectionTitle eyebrow="CURATED FOR YOU" title={selectedSub === 'All' ? `Latest in ${selected.name}` : selectedSub} description="Practical context and useful next steps for your learning journey."/><div className="category-articles-grid">{displayList.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div><div className="editorial-note"><Icon name="Info" size={17}/><span>New articles can be published from <strong>Workspace → News & Insights</strong>. Sample articles are provided as editable starter content.</span></div></div><aside className="category-aside"><MarketPanel onOpenMarkets={() => onCategory('Stock Market')}/><div className="panel topic-list-panel"><h3><Icon name="Layers3" size={17}/> {selected.name} topics</h3>{selected.subcategories.map((sub, index) => <button key={sub} onClick={() => setSelectedSub(sub)}><span className="topic-number">0{index + 1}</span><span>{sub}</span><Icon name="ArrowUpRight" size={15}/></button>)}</div><div className="panel learn-cta"><Icon name="GraduationCap" size={23}/><h3>Learn a little every day.</h3><p>Save articles you want to revisit and build your own reading list.</p><button className="button button-outline button-block" onClick={onWorkspace}>Open reading list <Icon name="ArrowRight" size={15}/></button></div></aside></div>
+      <div className="category-content-grid"><div><SectionTitle eyebrow="CURATED FOR YOU" title={selectedSub === 'All' ? `Latest in ${selected.name}` : selectedSub} description="Practical context and useful next steps for your learning journey."/><div className="category-articles-grid">{displayList.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div><div className="editorial-note"><Icon name="Info" size={17}/><span>New articles can be published from <strong>Workspace → News & Insights</strong>. Sample articles are provided as editable starter content.</span></div></div><aside className="category-aside"><MarketPanel cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} onOpenMarkets={() => onCategory('Stock Market')}/><div className="panel topic-list-panel"><h3><Icon name="Layers3" size={17}/> {selected.name} topics</h3>{selected.subcategories.map((sub, index) => <button key={sub} onClick={() => setSelectedSub(sub)}><span className="topic-number">0{index + 1}</span><span>{sub}</span><Icon name="ArrowUpRight" size={15}/></button>)}</div><div className="panel learn-cta"><Icon name="GraduationCap" size={23}/><h3>Learn a little every day.</h3><p>Save articles you want to revisit and build your own reading list.</p><button className="button button-outline button-block" onClick={onWorkspace}>Open reading list <Icon name="ArrowRight" size={15}/></button></div></aside></div>
     </main>
   );
 }
@@ -280,8 +333,8 @@ function AuthModal({ mode, onClose, onModeChange, onSubmit, onGoogle, busy, conf
           {message && <div className="form-message"><Icon name="MailCheck" size={16}/>{message}</div>}
           <button type="submit" className="button button-primary button-block button-large" disabled={busy}>{busy ? <Icon name="LoaderCircle" className="spin" size={17}/> : null}{busy ? 'Please wait…' : isSignup ? 'Create free account' : 'Sign in securely'}<Icon name="ArrowRight" size={17}/></button>
         </form>
-        <div className="auth-divider"><span/>or continue with<span/></div><button className="button button-google button-block" onClick={onGoogle}><Icon name="Chrome" size={18}/>{configured ? 'Continue with Google' : 'Try Google sign-in (preview)'}</button>
-        {!configured && <p className="preview-warning"><Icon name="Info" size={14}/> Preview mode: accounts are simulated until you connect Supabase.</p>}
+        <div className="auth-divider"><span/>or continue with<span/></div><button className="button button-google button-block" onClick={onGoogle} disabled={!configured && !import.meta.env.DEV}><Icon name="Chrome" size={18}/>{configured ? 'Continue with Google' : import.meta.env.DEV ? 'Try Google sign-in (preview)' : 'Google sign-in unavailable'}</button>
+        {!configured && <p className="preview-warning"><Icon name="Info" size={14}/> {import.meta.env.DEV ? 'Preview mode: accounts are simulated until you connect Supabase.' : 'Account services are temporarily unavailable. The site owner needs to configure Supabase.'}</p>}
         <p className="auth-switch">{isSignup ? 'Already have an account?' : 'New to Fynvera?'} <button onClick={() => { onModeChange(isSignup ? 'signin' : 'signup'); setMessage(''); }}>{isSignup ? 'Sign in' : 'Create an account'}</button></p>
         <small className="auth-legal">By continuing, you agree to the site terms and privacy policy. Fynvera provides financial education, not personalized investment advice.</small>
       </section>
@@ -361,7 +414,7 @@ function WorkspaceSidebar({ active, collapsed, onToggle, onNavigate, user, mobil
   );
 }
 
-function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, portfolio, profile, onProfileChange, onAvatarChange, onAddHolding, onRemoveHolding, onMarketWatchChange, onToggleWatch, onOpenArticle, onPublish, onCalculator, onAuth, onCategory, showToast }) {
+function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, portfolio, profile, onProfileChange, onAvatarChange, onAddHolding, onRemoveHolding, onMarketWatchChange, onToggleWatch, onOpenArticle, onPublish, onCalculator, onAuth, onCategory, showToast, cryptoPrices = {}, cryptoStatus = 'connecting' }) {
   const [editor, setEditor] = useState(false);
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
@@ -404,12 +457,13 @@ function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, po
         <section className="workspace-latest-section"><SectionTitle eyebrow="FRESH PERSPECTIVES" title="A few ideas worth your time" actionLabel="All insights" onAction={() => onNavigateSafe('News & Insights')}/><div className="workspace-article-grid">{latestItems.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div></section>
       </>}
       {page === 'My Portfolio' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> YOUR TRACKER</div><h1>My Portfolio</h1><p>Keep a simple record of holdings, goals and the notes that matter to you.</p></div><button className="button button-primary" onClick={() => onCalculator('compound')}><Icon name="Calculator" size={16}/> Growth calculator</button></div><div className="portfolio-total-card"><div><span>MANUALLY TRACKED VALUE</span><strong>{formatMoney(portfolioValue)}</strong><small>Enter values yourself; no brokerage is connected.</small></div><div className="portfolio-chart-art"><svg viewBox="0 0 320 95"><path d="M0 80 C30 70 45 81 68 58 S100 67 128 45 S157 52 183 31 S220 38 241 20 S286 26 320 4" fill="none" stroke="#22d6e7" strokeWidth="3" strokeLinecap="round"/><path d="M0 80 C30 70 45 81 68 58 S100 67 128 45 S157 52 183 31 S220 38 241 20 S286 26 320 4 L320 95 L0 95 Z" fill="#22d6e7" opacity=".11"/></svg><small>Illustrative line, not performance history</small></div></div><div className="portfolio-work-grid"><section className="panel workspace-table-panel"><div className="panel-heading"><div><h3>Holdings & notes</h3><p>Update values when you review your finances.</p></div><span className="heading-icon"><Icon name="BriefcaseBusiness" size={19}/></span></div><PortfolioTable portfolio={portfolio} onRemove={onRemoveHolding}/></section><section className="panel holding-form-panel"><h3><Icon name="PlusCircle" size={19}/> Add a holding</h3><p>Record a stock, ETF, fund, savings goal or any asset for personal reference.</p><form className="form-stack" onSubmit={(event) => { event.preventDefault(); onAddHolding({ symbol: holdingSymbol.toUpperCase(), type: holdingType, value: Number(holdingAmount), cost: Number(holdingCost) }); setHoldingSymbol(''); showToast('Portfolio note added.', 'success'); }}><label className="field-label">Asset / symbol<input className="plain-field" value={holdingSymbol} onChange={(event) => setHoldingSymbol(event.target.value)} placeholder="e.g. VOO" required/></label><label className="field-label">Type<select className="select-field" value={holdingType} onChange={(event) => setHoldingType(event.target.value)}>{['Stock', 'ETF', 'Crypto', 'Fund', 'Savings', 'Property', 'Other'].map((item) => <option key={item}>{item}</option>)}</select></label><label className="field-label">Current value (USD)<input className="plain-field" type="number" min="0" step="0.01" value={holdingAmount} onChange={(event) => setHoldingAmount(event.target.value)} required/></label><label className="field-label">Your cost basis (USD)<input className="plain-field" type="number" min="0" step="0.01" value={holdingCost} onChange={(event) => setHoldingCost(event.target.value)} required/></label><button className="button button-primary button-block" type="submit"><Icon name="Plus" size={16}/> Add to my portfolio</button></form></section></div></>}
-      {page === 'Watchlist' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> KEEP AN EYE ON WHAT MATTERS</div><h1>Your Watchlist</h1><p>Save articles and track example markets worth following.</p></div><button className="button button-primary" onClick={() => onCategory('Stock Market')}><Icon name="Plus" size={16}/> Discover more</button></div><div className="watchlist-market-grid">{markets.map((item) => { const saved = marketWatchlist.includes(item.symbol); return <div key={item.symbol} className="watchlist-market-card"><div className="watch-market-top"><span className="market-symbol" style={{ '--symbol-color': item.color }}>{item.symbol.slice(0, 1)}</span><button className={`icon-button ${saved ? 'icon-button-on' : ''}`} onClick={() => { const next = saved ? marketWatchlist.filter((symbol) => symbol !== item.symbol) : [...marketWatchlist, item.symbol]; onMarketWatchChange(next); showToast(saved ? `${item.name} removed from watchlist.` : `${item.name} added to watchlist.`, 'success'); }}>{saved ? <Icon name="Star" size={17} fill="currentColor"/> : <Icon name="Star" size={17}/>}</button></div><strong>{item.name}</strong><div className="watch-market-value">{item.value}</div><span className={`market-change ${item.positive ? 'positive' : 'negative'}`}><Icon name={item.positive ? 'TrendingUp' : 'TrendingDown'} size={14}/>{item.change}</span><div className="tiny-sparkline"><svg viewBox="0 0 180 42"><path d="M0 35 L18 30 L34 34 L48 20 L63 25 L81 16 L96 20 L112 9 L130 16 L148 6 L180 4" fill="none" stroke={item.color} strokeWidth="2.5" strokeLinecap="round"/></svg></div><small>Sample data · Not real-time</small></div>; })}</div><section className="workspace-latest-section"><SectionTitle eyebrow="SAVED ARTICLES" title="Read again when you're ready"/><div className="workspace-article-grid">{articles.filter((article) => watchlist.includes(article.id)).map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched/>)}</div>{!articles.some((article) => watchlist.includes(article.id)) && <div className="empty-state"><Icon name="Bookmark" size={26}/><strong>Your reading list is waiting.</strong><span>Save an article using its bookmark icon and it will appear here.</span><button className="button button-outline" onClick={() => onNavigateSafe('News & Insights')}>Explore insights</button></div>}</section></>}
+      {page === 'Watchlist' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> KEEP AN EYE ON WHAT MATTERS</div><h1>Your Watchlist</h1><p>Save articles and track example markets worth following.</p></div><button className="button button-primary" onClick={() => onCategory('Stock Market')}><Icon name="Plus" size={16}/> Discover more</button></div><div className="watchlist-market-grid">{markets.map((item) => { const saved = marketWatchlist.includes(item.symbol); const cryptoSymbol = ['BTC', 'ETH'].includes(item.symbol); const liveTicker = cryptoSymbol ? cryptoPrices[`${item.symbol}USDT`] : null; const liveChange = Number(liveTicker?.priceChangePercent ?? 0); const shownValue = liveTicker ? `$${formatCryptoPrice(liveTicker.lastPrice)}` : cryptoSymbol ? 'Connecting…' : item.value; const shownChange = liveTicker ? formatCryptoChange(liveChange) : cryptoSymbol ? '—' : item.change; const shownPositive = liveTicker ? liveChange >= 0 : item.positive; return <div key={item.symbol} className="watchlist-market-card"><div className="watch-market-top"><span className="market-symbol" style={{ '--symbol-color': item.color }}>{item.symbol.slice(0, 1)}</span><button className={`icon-button ${saved ? 'icon-button-on' : ''}`} onClick={() => { const next = saved ? marketWatchlist.filter((symbol) => symbol !== item.symbol) : [...marketWatchlist, item.symbol]; onMarketWatchChange(next); showToast(saved ? `${item.name} removed from watchlist.` : `${item.name} added to watchlist.`, 'success'); }}>{saved ? <Icon name="Star" size={17} fill="currentColor"/> : <Icon name="Star" size={17}/>}</button></div><strong>{item.name}</strong><div className="watch-market-value">{shownValue}</div><span className={`market-change ${shownPositive ? 'positive' : 'negative'}`}><Icon name={shownPositive ? 'TrendingUp' : 'TrendingDown'} size={14}/>{shownChange}</span><div className="tiny-sparkline"><svg viewBox="0 0 180 42"><path d="M0 35 L18 30 L34 34 L48 20 L63 25 L81 16 L96 20 L112 9 L130 16 L148 6 L180 4" fill="none" stroke={item.color} strokeWidth="2.5" strokeLinecap="round"/></svg></div><small>{liveTicker ? 'Live Binance Spot · USDT' : cryptoSymbol ? 'Waiting for Binance feed' : 'Sample data · Not real-time'}</small></div>; })}</div><section className="workspace-latest-section"><SectionTitle eyebrow="SAVED ARTICLES" title="Read again when you're ready"/><div className="workspace-article-grid">{articles.filter((article) => watchlist.includes(article.id)).map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched/>)}</div>{!articles.some((article) => watchlist.includes(article.id)) && <div className="empty-state"><Icon name="Bookmark" size={26}/><strong>Your reading list is waiting.</strong><span>Save an article using its bookmark icon and it will appear here.</span><button className="button button-outline" onClick={() => onNavigateSafe('News & Insights')}>Explore insights</button></div>}</section></>}
       {page === 'News & Insights' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> EDITORIAL DESK</div><h1>News & Insights</h1><p>Manage articles, prepare daily posts and share financial education with a global audience.</p></div><button className="button button-primary" onClick={() => setEditor((value) => !value)}><Icon name={editor ? 'X' : 'Plus'} size={16}/>{editor ? 'Close editor' : 'Publish an article'}</button></div>{editor && <section className="panel article-editor-panel"><div className="editor-panel-heading"><div><span className="eyebrow"><span/> NEW STORY</span><h2>Create an insight</h2><p>Write your article and add an image you generated for this post.</p></div><div className="editor-image-preview">{imagePreview ? <img src={imagePreview} alt="Article preview"/> : <><Icon name="ImagePlus" size={25}/><span>IMG-ARTICLE-CUSTOM</span></>}</div></div><form className="article-editor-form" onSubmit={submitArticle}><div className="editor-form-main"><label className="field-label">Article headline<input className="plain-field" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Write a clear, useful headline" maxLength={120} required/></label><label className="field-label">Short summary<textarea className="plain-field" value={excerpt} onChange={(event) => setExcerpt(event.target.value)} placeholder="What will readers learn? (140–220 characters works well)" rows={3} required/></label><div className="editor-form-two"><label className="field-label">Category<select className="select-field" value={category} onChange={(event) => setCategory(event.target.value)}>{categories.map((item) => <option key={item.name}>{item.name}</option>)}</select></label><label className="field-label">Subcategory<select className="select-field" value={subcategory} onChange={(event) => setSubcategory(event.target.value)}>{(categories.find((item) => item.name === category)?.subcategories || []).map((item) => <option key={item}>{item}</option>)}</select></label></div><label className="field-label">Article body<textarea className="plain-field article-body-input" value={body} onChange={(event) => setBody(event.target.value)} placeholder="Write your article here. Separate paragraphs with a blank line. Explain concepts clearly and cite reliable sources when needed." rows={10} required/></label><label className="field-label">SEO keywords <small>(comma separated)</small><input className="plain-field" value={keywords} onChange={(event) => setKeywords(event.target.value)} placeholder="investing, finance news, wealth building"/></label></div><div className="editor-form-aside"><label className="image-upload-zone"><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => changeImage(event.target.files?.[0])}/><Icon name="CloudUpload" size={26}/><strong>{imageFile ? imageFile.name : 'Add article image'}</strong><span>PNG, JPG or WebP · 5 MB recommended</span><small>Upload your own generated image. It is stored locally in preview mode, or in Supabase Storage when configured.</small></label><div className="seo-preview"><div className="seo-preview-label"><Icon name="Search" size={15}/> SEARCH PREVIEW</div><strong>{title || 'Your article headline'} | Fynvera</strong><span>fynvera.example › insights › {slugify(title) || 'your-article'}</span><p>{excerpt || 'Add a useful article description for search results and social previews.'}</p><small>Tip: use your main keyword naturally in the headline, intro and subheadings.</small></div><div className="editor-checklist"><strong><Icon name="ClipboardCheck" size={16}/> Before publishing</strong><span><Icon name="CheckCircle2" size={14}/> Clear title and summary</span><span><Icon name="CheckCircle2" size={14}/> Helpful, original content</span><span><Icon name="CheckCircle2" size={14}/> Relevant image and alt text</span><span><Icon name="CheckCircle2" size={14}/> Educational disclaimer</span></div></div><div className="editor-actions"><button type="button" className="button button-outline" onClick={resetEditor}>Cancel</button><button type="submit" className="button button-primary" disabled={saving}>{saving ? <Icon name="LoaderCircle" className="spin" size={16}/> : <Icon name="Send" size={16}/>} {saving ? 'Publishing…' : 'Publish article'} <Icon name="ArrowRight" size={16}/></button></div></form></section>}<div className="editorial-toolbar"><div><strong>{articles.length} articles</strong><span>Manage your current library</span></div><div><button className="button button-soft button-small" onClick={() => showToast('Drafts are stored when you publish in the configured database. This demo editor does not save separate drafts yet.', 'info')}><Icon name="FileEdit" size={15}/> Draft workflow</button></div></div><div className="manage-article-list">{articles.map((article) => <div className="manage-article-row" key={article.id}><ImageSlot id={article.imageId || 'IMG-ARTICLE-CUSTOM'} src={article.image} alt={article.title} compact/><div className="manage-article-copy"><span className="article-status"><i/> PUBLISHED · {article.category}</span><button onClick={() => onOpenArticle(article)}><strong>{article.title}</strong></button><small>{formatDate(article.date)} · {article.readTime || 5} min read · by {article.author || user?.name || 'Fynvera Editorial'}</small></div><button className="button button-soft button-small" onClick={() => onOpenArticle(article)}>Preview <Icon name="ArrowUpRight" size={14}/></button></div>)}</div></>}
-      {page === 'Markets' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> MARKET MONITOR</div><h1>Markets</h1><p>Keep an eye on sample index, currency and digital asset data before doing your own research.</p></div><span className="data-pill"><i/> SAMPLE QUOTES</span></div><MarketPanel onOpenMarkets={() => showToast('These example quotes are illustrative; connect a licensed live data provider only when you are ready.', 'info')}/><div className="market-explainer-grid"><div className="panel"><Icon name="BookOpenText" size={22}/><h3>Understand the numbers</h3><p>Price, percentage change, market cap and volume describe different parts of a market. Compare like with like before drawing conclusions.</p></div><div className="panel"><Icon name="ShieldCheck" size={22}/><h3>Know the risks</h3><p>Markets can gap, quotes can be delayed and currency movements can change investment results. This starter site intentionally uses sample data.</p></div><div className="panel"><Icon name="Search" size={22}/><h3>Do your own research</h3><p>Use issuer filings, official economic releases and regulated sources to validate important financial information.</p></div></div></>}
+      {page === 'Markets' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> MARKET MONITOR</div><h1>Markets</h1><p>Keep an eye on sample index, currency and digital asset data before doing your own research.</p></div><span className="data-pill"><i/> CRYPTO LIVE · OTHER MARKETS SAMPLE</span></div><MarketPanel cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} onOpenMarkets={() => showToast('Crypto quotes use Binance public market data. Index, forex and commodity values shown here remain examples.', 'info')}/><div className="market-explainer-grid"><div className="panel"><Icon name="BookOpenText" size={22}/><h3>Understand the numbers</h3><p>Price, percentage change, market cap and volume describe different parts of a market. Compare like with like before drawing conclusions.</p></div><div className="panel"><Icon name="ShieldCheck" size={22}/><h3>Know the risks</h3><p>Markets can gap, quotes can be delayed and currency movements can change investment results. This starter site intentionally uses sample data.</p></div><div className="panel"><Icon name="Search" size={22}/><h3>Do your own research</h3><p>Use issuer filings, official economic releases and regulated sources to validate important financial information.</p></div></div></>}
       {page === 'Tools & Calculators' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> FREE FINANCIAL TOOLS</div><h1>Tools & Calculators</h1><p>Try scenarios with five helpful calculators. Change the assumptions to learn how the result moves.</p></div><span className="data-pill"><Icon name="Zap" size={14}/> NO API REQUIRED</span></div><div className="all-calculators-grid">{calculatorList.map((calculator) => <button key={calculator.id} className="large-calculator-card" onClick={() => onCalculator(calculator.id)}><span className="large-calculator-icon"><Icon name={calculator.icon} size={23}/></span><strong>{calculator.name}</strong><p>{calculator.description}</p><span className="calculator-open-link">Open calculator <Icon name="ArrowUpRight" size={15}/></span></button>)}</div><div className="calculator-disclaimer"><Icon name="Info" size={17}/><span>Outputs are estimates based on the values you enter. Currency exchange rates are editable examples, not live quotes. No calculators connect to a financial institution.</span></div></>}
       {page === 'Settings' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> MAKE IT YOURS</div><h1>Account settings</h1><p>Update your display profile, financial preferences and personal planning details.</p></div><span className="data-pill"><Icon name="LockKeyhole" size={14}/> {isSupabaseConfigured ? 'ACCOUNT CONNECTED' : 'LOCAL PREVIEW'}</span></div><div className="settings-layout"><section className="panel settings-profile-panel"><div className="panel-heading"><div><h3>Profile information</h3><p>Choose how your workspace looks to you.</p></div><span className="heading-icon"><Icon name="UserRound" size={19}/></span></div><div className="profile-avatar-editor"><span className="avatar avatar-large">{user?.avatar ? <img src={user.avatar} alt="Profile"/> : (profileDraft.name || user?.email || 'U').slice(0, 1).toUpperCase()}</span><div><strong>{profileDraft.name || user?.name || 'Fynvera member'}</strong><small>{user?.email || 'Preview user'}</small><label className="button button-soft button-small avatar-upload-button"><Icon name="Camera" size={14}/> Change profile picture<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { if (event.target.files?.[0]) onAvatarChange(event.target.files[0]); }}/></label></div></div><div className="settings-form-grid"><label className="field-label">Display name<input className="plain-field" value={profileDraft.name || ''} onChange={(event) => updateProfileField('name', event.target.value)} placeholder="Your name"/></label><label className="field-label">Location / country<input className="plain-field" value={profileDraft.country || ''} onChange={(event) => updateProfileField('country', event.target.value)} placeholder="Country (optional)"/></label><label className="field-label">Preferred currency<select className="select-field" value={profileDraft.currency || 'USD'} onChange={(event) => updateProfileField('currency', event.target.value)}>{['USD', 'EUR', 'GBP', 'LKR', 'AUD', 'CAD', 'INR', 'JPY'].map((item) => <option key={item}>{item}</option>)}</select></label><label className="field-label">Financial knowledge<select className="select-field" value={profileDraft.experience || 'Beginner'} onChange={(event) => updateProfileField('experience', event.target.value)}>{['Beginner', 'Intermediate', 'Advanced'].map((item) => <option key={item}>{item}</option>)}</select></label></div><button className="button button-primary" onClick={saveCurrentProfile}><Icon name="Save" size={16}/> Save profile</button></section><section className="panel finance-preferences-panel"><div className="panel-heading"><div><h3>Financial planning preferences</h3><p>Optional planning details, stored locally until backend is configured.</p></div><span className="heading-icon"><Icon name="Target" size={19}/></span></div><label className="field-label">Main financial goal<select className="select-field" value={profileDraft.goal || 'Build long-term wealth'} onChange={(event) => updateProfileField('goal', event.target.value)}>{['Build long-term wealth', 'Grow savings', 'Pay down debt', 'Plan for retirement', 'Buy a home', 'Learn how to invest'].map((item) => <option key={item}>{item}</option>)}</select></label><label className="field-label">Risk comfort level<select className="select-field" value={riskLevel} onChange={(event) => setRiskLevel(event.target.value)}>{['Conservative', 'Moderate', 'Growth-oriented'].map((item) => <option key={item}>{item}</option>)}</select></label><label className="field-label">Monthly savings target<input className="plain-field" type="number" min="0" value={profileDraft.monthlyTarget || ''} onChange={(event) => updateProfileField('monthlyTarget', event.target.value)} placeholder="e.g. 250"/></label><label className="field-label">Planning notes<textarea className="plain-field" rows={4} value={profileDraft.notes || ''} onChange={(event) => updateProfileField('notes', event.target.value)} placeholder="Goals, milestones or questions to discuss with an adviser"/></label><button className="button button-outline" onClick={saveCurrentProfile}><Icon name="Save" size={16}/> Save planning preferences</button><div className="settings-security-note"><Icon name="ShieldCheck" size={18}/><span><strong>Privacy tip</strong> Never store passwords, card numbers or bank login details in notes. Use the official website of your financial institution for account access.</span></div></section></div><section className="panel connected-services-panel"><Icon name="Database" size={20}/><div><h3>Account and database connection</h3><p>{isSupabaseConfigured ? 'Supabase credentials were detected. Verify Authentication, Storage buckets and Row Level Security policies in your project.' : 'No API key is needed for the preview. To enable verified email, Google sign-in, persistent accounts and cross-device data, use the free Supabase starter setup included in README.md.'}</p></div><button className="button button-soft" onClick={() => showToast(isSupabaseConfigured ? 'Supabase environment variables are present. See SETUP_GUIDE.md to validate policies.' : 'Open SETUP_GUIDE.md in the project ZIP for the free Supabase setup, including Google OAuth.', 'info')}>Setup guide <Icon name="ArrowUpRight" size={15}/></button></section></>}
       {['Investing', 'Forex', 'Personal Finance', 'Real Estate', 'Commodities', 'Education', 'Regulatory Policy'].includes(page) && <CategoryWorkspace page={page} articles={articles} onCategory={onCategory} onOpenArticle={onOpenArticle} onCalculator={onCalculator} onToggleWatch={onToggleWatch} watchlist={watchlist}/>}
+      {page === 'Author Profile' && <AuthorProfileWorkspace user={user} showToast={showToast} onAuth={onAuth} />}
       {page === 'Log Out' && <div className="logout-confirm panel"><span className="logout-icon"><Icon name="LogOut" size={24}/></span><h2>Leave your workspace?</h2><p>Your locally saved demo notes remain in this browser, but you will return to the public site.</p><button className="button button-primary" onClick={() => onAuth('logout')}>Log out <Icon name="ArrowRight" size={16}/></button><button className="button button-ghost" onClick={() => onNavigateSafe('Dashboard')}>Stay here</button></div>}
       <div className="workspace-footer-note"><Icon name="ShieldCheck" size={14}/> Educational tools only · Your financial decisions remain yours.</div>
     </div>
@@ -429,6 +483,191 @@ function CategoryWorkspace({ page, articles, onCategory, onOpenArticle, onCalcul
   const fallback = matching.length ? matching : articles.slice(0, 3);
   const meta = categories.find((item) => item.name === page) || categories[1];
   return <><div className="workspace-welcome"><div><div className="eyebrow"><span/> LEARN & EXPLORE</div><h1>{page}</h1><p>Browse curated guides, explore important concepts and keep your next steps practical.</p></div><button className="button button-primary" onClick={() => onCalculator()}><Icon name="Calculator" size={16}/> Use a calculator</button></div><div className="workspace-topic-chips">{meta.subcategories.map((sub) => <button key={sub} onClick={() => onCategory(page)}>{sub}<Icon name="ArrowUpRight" size={14}/></button>)}</div><div className="workspace-article-grid">{fallback.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div><div className="panel category-workspace-disclaimer"><Icon name="BookOpenText" size={18}/><div><strong>Keep learning, one concept at a time</strong><p>Some categories may not have published sample articles yet. Use News & Insights to publish original content with images and relevant keywords.</p></div></div></>;
+}
+
+function AuthorProfileWorkspace({ user, showToast, onAuth }) {
+  const [draft, setDraft] = useState({ username: '', display_name: user?.name || '', bio: '', x_url: '', tiktok_url: '', facebook_url: '', telegram_url: '' });
+  const [stats, setStats] = useState({ followers: 0, following: 0, likes_received: 0, published_articles: 0 });
+  const [loading, setLoading] = useState(Boolean(supabase && user && !user.demo));
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!supabase || !user || user.demo) { setLoading(false); return undefined; }
+    let cancelled = false;
+    Promise.all([
+      supabase.from('author_profiles').select('username,display_name,bio,x_url,tiktok_url,facebook_url,telegram_url').eq('user_id', user.id).maybeSingle(),
+      supabase.rpc('author_social_counts', { p_author_id: user.id })
+    ]).then(([profileResult, statsResult]) => {
+      if (cancelled) return;
+      const row = profileResult.data || {};
+      setDraft((current) => ({ ...current, username: row.username || current.username || (user.email || '').split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').slice(0, 24), display_name: row.display_name || user.name || current.display_name, bio: row.bio || '', x_url: row.x_url || '', tiktok_url: row.tiktok_url || '', facebook_url: row.facebook_url || '', telegram_url: row.telegram_url || '' }));
+      const statsRow = Array.isArray(statsResult.data) ? statsResult.data[0] : statsResult.data;
+      if (statsRow) setStats({ followers: Number(statsRow.followers) || 0, following: Number(statsRow.following) || 0, likes_received: Number(statsRow.likes_received) || 0, published_articles: Number(statsRow.published_articles) || 0 });
+      setLoading(false);
+    }).catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+  const change = (key, value) => setDraft((current) => ({ ...current, [key]: value }));
+  const save = async (event) => {
+    event.preventDefault();
+    if (!user) { onAuth('signup'); return; }
+    if (!supabase || user.demo) { showToast('Create/verify your Supabase account to publish a real author profile. Preview mode does not sync this publicly.', 'error'); return; }
+    const username = draft.username.trim().replace(/^@/, '').toLowerCase();
+    if (!/^[a-z0-9_]{3,24}$/.test(username)) { showToast('Username must be 3–24 characters using letters, numbers or underscores.', 'error'); return; }
+    setSaving(true);
+    const { error } = await supabase.from('author_profiles').upsert({ user_id: user.id, username, display_name: draft.display_name.trim() || user.name || username, bio: draft.bio.trim(), x_url: draft.x_url.trim() || null, tiktok_url: draft.tiktok_url.trim() || null, facebook_url: draft.facebook_url.trim() || null, telegram_url: draft.telegram_url.trim() || null }, { onConflict: 'user_id' });
+    setSaving(false);
+    if (error) { showToast(error.message.includes('author_profiles') ? 'Run supabase/community_update.sql in Supabase SQL Editor first.' : error.message, 'error'); return; }
+    setDraft((current) => ({ ...current, username }));
+    showToast('Your public author profile was saved.', 'success');
+  };
+  const externalLinks = [ ['X', 'x_url'], ['TikTok', 'tiktok_url'], ['Facebook', 'facebook_url'], ['Telegram', 'telegram_url'] ];
+  return <>
+    <div className="workspace-welcome"><div><div className="eyebrow"><span/> CREATOR SPACE</div><h1>Author Profile</h1><p>Create the public-facing profile readers see when they discover your articles.</p></div><span className="data-pill"><Icon name="UserRound" size={14}/> PUBLIC CREATOR PROFILE</span></div>
+    <div className="author-profile-stats-grid">
+      {[['Published articles', stats.published_articles, 'FileText'], ['Followers', stats.followers, 'Users'], ['Following', stats.following, 'UserRoundCheck'], ['Likes received', stats.likes_received, 'Heart']].map(([label, value, icon]) => <div className="summary-card" key={label}><div className="summary-card-top"><span>{label.toUpperCase()}</span><span className="summary-icon"><Icon name={icon} size={18}/></span></div><strong>{loading ? '…' : Number(value).toLocaleString('en-US')}</strong></div>)}
+    </div>
+    <section className="panel author-profile-form-panel"><div className="panel-heading"><div><h3>Public profile details</h3><p>These details are for your creator identity. Financial goals and planning notes remain private.</p></div><span className="heading-icon"><Icon name="BadgeCheck" size={19}/></span></div>
+      <form className="author-profile-form" onSubmit={save}>
+        <div className="settings-form-grid"><label className="field-label">Username<input className="plain-field" value={draft.username} onChange={(event) => change('username', event.target.value)} placeholder="e.g. market_writer" minLength={3} maxLength={24} required/><small>3–24 letters, numbers or underscores.</small></label><label className="field-label">Display name<input className="plain-field" value={draft.display_name} onChange={(event) => change('display_name', event.target.value)} placeholder="Your public author name" maxLength={80} required/></label></div>
+        <label className="field-label">Short bio<textarea className="plain-field" value={draft.bio} onChange={(event) => change('bio', event.target.value)} rows={4} maxLength={500} placeholder="Tell readers about your finance topics, writing experience and editorial focus."/></label>
+        <div className="settings-form-grid">{externalLinks.map(([label,key]) => <label className="field-label" key={key}>{label} profile/channel URL<input className="plain-field" type="url" value={draft[key]} onChange={(event) => change(key, event.target.value)} placeholder={`https://${label === 'Telegram' ? 't.me/yourchannel' : label.toLowerCase() + '.com/yourhandle'}`}/></label>)}</div>
+        <div className="author-profile-form-footer"><p><Icon name="ShieldCheck" size={16}/> Never add passwords, financial information or private account details to this public profile.</p><button className="button button-primary" type="submit" disabled={saving}>{saving ? <Icon name="LoaderCircle" size={16} className="spin"/> : <Icon name="Save" size={16}/>} {saving ? 'Saving…' : 'Save author profile'}</button></div>
+      </form>
+    </section>
+    {!supabase && <div className="calculator-disclaimer"><Icon name="Info" size={17}/><span>Supabase is not configured in this environment. This page is visible in preview mode, but public profile saves require the database setup.</span></div>}
+  </>;
+}
+
+function FollowAuthorButton({ targetId, user, authorName, onAuth, showToast }) {
+  const [following, setFollowing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [available, setAvailable] = useState(Boolean(targetId && isUuid(targetId)));
+  useEffect(() => {
+    if (!targetId || !isUuid(targetId) || !supabase || !user || user.demo || user.id === targetId) { setAvailable(Boolean(targetId && isUuid(targetId))); setFollowing(false); return undefined; }
+    let cancelled = false;
+    supabase.from('author_follows').select('followed_id').eq('follower_id', user.id).eq('followed_id', targetId).maybeSingle().then(({ data, error }) => {
+      if (!cancelled) { if (!error) setFollowing(Boolean(data)); setAvailable(!error); }
+    });
+    return () => { cancelled = true; };
+  }, [targetId, user?.id]);
+  const toggle = async () => {
+    if (!user) { onAuth('signup'); showToast('Create a free account to follow authors.', 'info'); return; }
+    if (user.demo || !supabase) { showToast('Follow authors needs your verified Supabase account to sync across devices.', 'error'); return; }
+    if (!isUuid(targetId) || user.id === targetId) return;
+    setBusy(true);
+    const result = following
+      ? await supabase.from('author_follows').delete().eq('follower_id', user.id).eq('followed_id', targetId)
+      : await supabase.from('author_follows').insert({ follower_id: user.id, followed_id: targetId });
+    setBusy(false);
+    if (result.error) { showToast(result.error.message.includes('author_follows') ? 'Run the Supabase community update SQL file first.' : result.error.message, 'error'); return; }
+    setFollowing(!following);
+    showToast(following ? `You unfollowed ${authorName || 'this author'}.` : `You are now following ${authorName || 'this author'}.`, 'success');
+  };
+  if (!targetId || !isUuid(targetId)) return null;
+  if (user?.id === targetId) return <span className="author-self-label"><Icon name="BadgeCheck" size={14}/> Your author profile</span>;
+  return <button className={`button ${following ? 'button-soft' : 'button-outline'} button-small follow-author-button`} disabled={busy || !available} onClick={toggle}><Icon name={following ? 'UserRoundCheck' : 'UserRoundPlus'} size={15}/>{busy ? 'Please wait…' : following ? 'Following' : 'Follow author'}</button>;
+}
+
+function ArticleCommunity({ article, user, onAuth, showToast }) {
+  const localKey = `community-${article.id}`;
+  const [reaction, setReaction] = useState(null);
+  const [counts, setCounts] = useState({ likes: 0, dislikes: 0 });
+  const [comments, setComments] = useState([]);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [busy, setBusy] = useState(false);
+  const local = !supabase || user?.demo || !isUuid(article.id);
+
+  const loadRemote = async () => {
+    if (!supabase || !isUuid(article.id)) return;
+    const [countsResult, commentsResult, myReactionResult] = await Promise.all([
+      supabase.rpc('article_reaction_counts', { p_article_id: article.id }),
+      supabase.from('article_comments').select('id,user_id,body,created_at').eq('article_id', article.id).order('created_at', { ascending: false }).limit(50),
+      user && !user.demo ? supabase.from('article_reactions').select('reaction').eq('article_id', article.id).eq('user_id', user.id).maybeSingle() : Promise.resolve({ data: null, error: null })
+    ]);
+    const countRow = Array.isArray(countsResult.data) ? countsResult.data[0] : countsResult.data;
+    if (countRow) setCounts({ likes: Number(countRow.likes) || 0, dislikes: Number(countRow.dislikes) || 0 });
+    if (!myReactionResult.error) setReaction(myReactionResult.data?.reaction || null);
+    if (commentsResult.data) {
+      const ids = [...new Set(commentsResult.data.map((item) => item.user_id).filter(Boolean))];
+      let profiles = [];
+      if (ids.length) {
+        const profilesResult = await supabase.from('author_profiles').select('user_id,username,display_name').in('user_id', ids);
+        profiles = profilesResult.data || [];
+      }
+      const names = Object.fromEntries(profiles.map((profile) => [profile.user_id, profile.display_name || profile.username || 'Fynvera member']));
+      setComments(commentsResult.data.map((item) => ({ ...item, display_name: names[item.user_id] || 'Fynvera member' })));
+    }
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    if (local) {
+      const saved = loadLocal(localKey, { likes: [], dislikes: [], comments: [] });
+      const myId = user?.id || null;
+      setCounts({ likes: saved.likes?.length || 0, dislikes: saved.dislikes?.length || 0 });
+      setReaction(myId && saved.likes?.includes(myId) ? 'like' : myId && saved.dislikes?.includes(myId) ? 'dislike' : null);
+      setComments([...(saved.comments || [])].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)));
+      return undefined;
+    }
+    loadRemote().catch((error) => { if (!cancelled) console.warn('Article community data could not be loaded.', error); });
+    return () => { cancelled = true; };
+  }, [article.id, user?.id]);
+
+  const updateLocal = (next) => { saveLocal(localKey, next); setCounts({ likes: next.likes?.length || 0, dislikes: next.dislikes?.length || 0 }); setComments([...(next.comments || [])].sort((a,b) => new Date(b.created_at) - new Date(a.created_at))); };
+  const react = async (value) => {
+    if (!user) { onAuth('signup'); showToast('Create a free account to react to articles.', 'info'); return; }
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (local) {
+        const saved = loadLocal(localKey, { likes: [], dislikes: [], comments: [] });
+        const myId = user.id;
+        const next = { likes: [...(saved.likes || [])], dislikes: [...(saved.dislikes || [])], comments: [...(saved.comments || [])] };
+        next.likes = next.likes.filter((id) => id !== myId); next.dislikes = next.dislikes.filter((id) => id !== myId);
+        const same = reaction === value;
+        if (!same) next[value === 'like' ? 'likes' : 'dislikes'].push(myId);
+        updateLocal(next); setReaction(same ? null : value);
+      } else {
+        const request = reaction === value
+          ? await supabase.from('article_reactions').delete().eq('article_id', article.id).eq('user_id', user.id)
+          : await supabase.from('article_reactions').upsert({ article_id: article.id, user_id: user.id, reaction: value }, { onConflict: 'article_id,user_id' });
+        if (request.error) throw request.error;
+        setReaction(reaction === value ? null : value);
+        await loadRemote();
+      }
+      showToast(reaction === value ? 'Reaction removed.' : 'Thanks for sharing your feedback.', 'success');
+    } catch (error) { showToast(error.message || 'Could not save your reaction.', 'error'); }
+    finally { setBusy(false); }
+  };
+
+  const sendComment = async (event) => {
+    event.preventDefault();
+    const body = commentDraft.trim();
+    if (!body) return;
+    if (!user) { onAuth('signup'); showToast('Create a free account to comment.', 'info'); return; }
+    if (body.length > 2000) { showToast('Comments must be 2,000 characters or less.', 'error'); return; }
+    setBusy(true);
+    try {
+      if (local) {
+        const saved = loadLocal(localKey, { likes: [], dislikes: [], comments: [] });
+        const item = { id: `local-comment-${Date.now()}`, user_id: user.id, display_name: user.name || user.email?.split('@')[0] || 'Fynvera member', body, created_at: new Date().toISOString() };
+        updateLocal({ ...saved, comments: [item, ...(saved.comments || [])] });
+      } else {
+        const { error } = await supabase.from('article_comments').insert({ article_id: article.id, user_id: user.id, body });
+        if (error) throw error;
+        await loadRemote();
+      }
+      setCommentDraft(''); showToast('Comment posted.', 'success');
+    } catch (error) { showToast(error.message || 'Could not post your comment.', 'error'); }
+    finally { setBusy(false); }
+  };
+
+  return <section className="article-community panel" aria-label="Article community"><div className="panel-heading"><div><h3>Join the conversation</h3><p>Share a reaction or add a useful, respectful comment.</p></div><span className="heading-icon"><Icon name="MessageCircle" size={19}/></span></div>
+    <div className="article-reaction-row"><button className={`button button-soft ${reaction === 'like' ? 'button-soft-active' : ''}`} disabled={busy} onClick={() => react('like')}><Icon name="ThumbsUp" size={16}/><span>Like</span><strong>{counts.likes}</strong></button><button className={`button button-soft ${reaction === 'dislike' ? 'button-soft-active' : ''}`} disabled={busy} onClick={() => react('dislike')}><Icon name="ThumbsDown" size={16}/><span>Dislike</span><strong>{counts.dislikes}</strong></button><span className="article-community-account-note">{user ? `Signed in as ${user.name || user.email}` : 'Sign in to react or comment'}</span></div>
+    <form className="article-comment-form" onSubmit={sendComment}><label className="field-label" htmlFor={`comment-${article.id}`}>Comment<textarea id={`comment-${article.id}`} className="plain-field" rows={3} maxLength={2000} value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} placeholder={user ? 'Add a thoughtful comment…' : 'Sign in to join the discussion'} /></label><div className="article-comment-submit"><small>{commentDraft.length}/2000 · Keep it useful and respectful.</small><button className="button button-primary button-small" type="submit" disabled={busy || !commentDraft.trim()}><Icon name="Send" size={14}/> Post comment</button></div></form>
+    <div className="article-comment-list">{comments.map((comment) => <article className="article-comment" key={comment.id}><span className="author-initial">{(comment.display_name || 'F').slice(0,1).toUpperCase()}</span><div><div className="article-comment-meta"><strong>{comment.display_name || 'Fynvera member'}</strong><time dateTime={comment.created_at}>{formatDate(comment.created_at?.slice(0,10))}</time></div><p>{comment.body}</p></div></article>)}{!comments.length && <p className="article-comment-empty">No comments yet. Start a helpful conversation.</p>}</div>
+    <p className="article-community-moderation"><Icon name="ShieldCheck" size={14}/> Do not post private, financial-account or personal contact information. Comments may be moderated.</p>
+  </section>;
 }
 
 function isUuid(value) {
@@ -461,19 +700,28 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [calculatorId, setCalculatorId] = useState(null);
   const [toast, setToast] = useState(null);
-  const [currentUser, setCurrentUser] = useState(() => loadLocal('demoUser', null));
+  const [currentUser, setCurrentUser] = useState(() => import.meta.env.DEV ? loadLocal('demoUser', null) : null);
   const [articles, setArticles] = useState(() => loadLocal('articles', seedArticles));
   const [watchlist, setWatchlist] = useState(() => loadLocal('articleWatchlist', []));
   // Start with an empty portfolio: users should not mistake illustrative figures for their own finances.
   const [portfolio, setPortfolio] = useState(() => loadLocal('portfolio', []));
   const [profile, setProfile] = useState(() => loadLocal('profile', { name: '', country: '', currency: 'USD', experience: 'Beginner', goal: 'Build long-term wealth', riskLevel: 'Moderate', monthlyTarget: '', notes: '' }));
   const [activeWatchMarket, setActiveWatchMarket] = useState(() => loadLocal('marketWatchlist', ['SPX', 'BTC']));
+  const [cryptoPrices, setCryptoPrices] = useState({});
+  const [cryptoStatus, setCryptoStatus] = useState('connecting');
 
   const showToast = (message, type = 'info') => { setToast({ message, type, id: Date.now() }); window.setTimeout(() => setToast((value) => value?.message === message ? null : value), 3800); };
   const navigateCategory = (name, subcategory = 'All') => { setSelectedArticle(null); setWorkspaceOpen(false); setSelectedSubcategory(subcategory || 'All'); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const openWorkspace = () => { setWorkspaceOpen(true); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const openCalculatorLibrary = () => { setWorkspaceOpen(true); setWorkspacePage('Tools & Calculators'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const openWorkspace = (userOverride = null) => {
+    if (!(userOverride || currentUser)) { setAuthMode('signup'); showToast('Create a free account or sign in to access your private workspace.', 'info'); return; }
+    setWorkspaceOpen(true); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const openCalculatorLibrary = () => {
+    if (!currentUser) { setAuthMode('signup'); showToast('Create a free account to open workspace tools.', 'info'); return; }
+    setWorkspaceOpen(true); setWorkspacePage('Tools & Calculators'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const navigateWorkspace = (page) => {
+    if (!currentUser) { setAuthMode('signup'); showToast('Please create an account or sign in first.', 'info'); return; }
     if (page === 'Log Out') { setWorkspacePage('Log Out'); return; }
     setWorkspacePage(page); setWorkspaceOpen(true); setSelectedArticle(null); setActiveView('Workspace');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -481,6 +729,57 @@ export default function App() {
   const openArticle = (article) => { setSelectedArticle(article); setWorkspaceOpen(false); setActiveView('Article'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const openCalculator = (id) => { setCalculatorId(id || calculatorList[0].id); };
   const openAuth = (mode) => { if (mode === 'logout') { handleLogout(); return; } setAuthMode(mode); };
+
+  // One shared public Binance Spot market-data connection powers all crypto widgets.
+  // No exchange API key is used or needed for public ticker streams.
+  useEffect(() => {
+    let active = true;
+    let socket = null;
+    let reconnectTimer = null;
+    const parseTicker = (row) => ({ lastPrice: Number(row.c ?? row.lastPrice), priceChangePercent: Number(row.P ?? row.priceChangePercent), highPrice: Number(row.h ?? row.highPrice), lowPrice: Number(row.l ?? row.lowPrice), quoteVolume: Number(row.q ?? row.quoteVolume) });
+    const fetchSnapshot = async () => {
+      try {
+        const url = new URL('https://data-api.binance.vision/api/v3/ticker/24hr');
+        url.searchParams.set('symbols', JSON.stringify(BINANCE_SYMBOLS));
+        const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error(`Binance snapshot returned ${response.status}`);
+        const rows = await response.json();
+        if (!active || !Array.isArray(rows)) return;
+        setCryptoPrices((current) => ({ ...current, ...Object.fromEntries(rows.map((row) => [row.symbol, parseTicker(row)])) }));
+        setCryptoStatus((current) => current === 'live' ? 'live' : 'snapshot');
+      } catch (error) {
+        if (active) setCryptoStatus((current) => current === 'live' || current === 'snapshot' ? current : 'connecting');
+        console.warn('Binance public market snapshot is temporarily unavailable.', error);
+      }
+    };
+    const connect = () => {
+      if (!active) return;
+      try {
+        const streams = BINANCE_SYMBOLS.map((symbol) => `${symbol.toLowerCase()}@ticker`).join('/');
+        socket = new WebSocket(`wss://data-stream.binance.vision:443/stream?streams=${streams}`);
+        socket.onopen = () => { if (active) setCryptoStatus('live'); };
+        socket.onmessage = (event) => {
+          if (!active) return;
+          try {
+            const message = JSON.parse(event.data);
+            const row = message.data || message;
+            if (!row.s || !BINANCE_SYMBOLS.includes(row.s)) return;
+            setCryptoPrices((current) => ({ ...current, [row.s]: parseTicker(row) }));
+            setCryptoStatus('live');
+          } catch (error) { console.warn('Ignored an invalid Binance ticker message.', error); }
+        };
+        socket.onerror = () => { if (active) setCryptoStatus((current) => current === 'live' ? 'snapshot' : current); };
+        socket.onclose = () => { if (active) { setCryptoStatus((current) => current === 'live' ? 'snapshot' : current); reconnectTimer = window.setTimeout(connect, 5000); } };
+      } catch (error) {
+        setCryptoStatus('connecting');
+        reconnectTimer = window.setTimeout(connect, 5000);
+      }
+    };
+    fetchSnapshot();
+    connect();
+    const snapshotInterval = window.setInterval(fetchSnapshot, 60_000);
+    return () => { active = false; window.clearInterval(snapshotInterval); if (reconnectTimer) window.clearTimeout(reconnectTimer); if (socket) { socket.onopen = null; socket.onmessage = null; socket.onclose = null; socket.onerror = null; socket.close(); } };
+  }, []);
 
   // Load auth session only when Supabase is configured; otherwise preview mode remains fully usable.
   useEffect(() => {
@@ -498,7 +797,11 @@ export default function App() {
     }).catch((error) => console.warn('Could not restore the session.', error));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!isMounted) return;
-      if (!session?.user) return;
+      if (!session?.user) {
+        // A sign-out from this tab or another tab must not leave the private workspace visible.
+        setCurrentUser(null); saveLocal('demoUser', null); setWorkspaceOpen(false); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Home');
+        return;
+      }
       const authUser = session.user;
       const nextUser = { id: authUser.id, email: authUser.email, name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email?.split('@')[0], avatar: authUser.user_metadata?.avatar_url || '', demo: false };
       setCurrentUser(nextUser); saveLocal('demoUser', nextUser);
@@ -510,9 +813,9 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return;
     let isMounted = true;
-    supabase.from('articles').select('id,title,slug,excerpt,category,subcategory,author,author_role,image_url,body,keywords,published_at,read_time').eq('status', 'published').order('published_at', { ascending: false }).limit(100).then(({ data, error }) => {
+    supabase.from('articles').select('id,author_id,title,slug,excerpt,category,subcategory,author,author_role,image_url,body,keywords,published_at,read_time').eq('status', 'published').order('published_at', { ascending: false }).limit(100).then(({ data, error }) => {
       if (error || !data?.length || !isMounted) return;
-      const databaseArticles = data.map((row) => ({ id: row.id, title: row.title, slug: row.slug, excerpt: row.excerpt, category: row.category, subcategory: row.subcategory, author: row.author || 'Fynvera Editorial', authorRole: row.author_role || 'Finance Contributor', image: row.image_url || '', imageId: 'IMG-ARTICLE-CUSTOM', body: Array.isArray(row.body) ? row.body : [String(row.body || '')], keywords: row.keywords || [], date: row.published_at?.slice(0, 10), readTime: row.read_time || 5 }));
+      const databaseArticles = data.map((row) => ({ id: row.id, authorId: row.author_id, title: row.title, slug: row.slug, excerpt: row.excerpt, category: row.category, subcategory: row.subcategory, author: row.author || 'Fynvera Editorial', authorRole: row.author_role || 'Finance Contributor', image: row.image_url || '', imageId: 'IMG-ARTICLE-CUSTOM', body: Array.isArray(row.body) ? row.body : [String(row.body || '')], keywords: row.keywords || [], date: row.published_at?.slice(0, 10), readTime: row.read_time || 5 }));
       setArticles((current) => [...databaseArticles, ...current.filter((article) => String(article.id).startsWith('seed-') || String(article.id).startsWith('demo-'))]);
     });
     return () => { isMounted = false; };
@@ -587,7 +890,7 @@ export default function App() {
           if (error) throw error;
           if (data.session && data.user) {
             const user = { id: data.user.id, email: data.user.email, name, avatar: '', demo: false };
-            setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name })); setAuthMode(null); openWorkspace(); showToast('Account created successfully.', 'success');
+            setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name })); setAuthMode(null); openWorkspace(user); showToast('Account created successfully.', 'success');
             return { ok: true };
           }
           return { message: 'Check your inbox to verify your email, then return here to sign in.' };
@@ -596,13 +899,14 @@ export default function App() {
         if (error) throw error;
         if (data.user) {
           const user = { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0], avatar: data.user.user_metadata?.avatar_url || '', demo: false };
-          setCurrentUser(user); saveLocal('demoUser', user); setAuthMode(null); openWorkspace(); showToast('Welcome back to Fynvera.', 'success');
+          setCurrentUser(user); saveLocal('demoUser', user); setAuthMode(null); openWorkspace(user); showToast('Welcome back to Fynvera.', 'success');
         }
         return { ok: true };
       }
-      // Demo mode never persists or validates the password. It previews the interface only, not real authentication.
+      // Local demo accounts are allowed only on the development server, never on the deployed public site.
+      if (!import.meta.env.DEV) return { message: 'Fynvera account services are not configured yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your Vercel project, then redeploy.' };
       const user = { id: `demo-${Date.now()}`, email, name: name.trim() || email.split('@')[0], avatar: '', demo: true };
-      setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name: user.name })); setAuthMode(null); openWorkspace();
+      setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name: user.name })); setAuthMode(null); openWorkspace(user);
       showToast(mode === 'signup' ? 'Preview profile created in this browser.' : 'Signed in to preview mode.', 'success');
       return { ok: true };
     } catch (error) {
@@ -619,8 +923,9 @@ export default function App() {
       } catch (error) { showToast(error.message || 'Google sign-in could not be started.', 'error'); }
       return;
     }
+    if (!import.meta.env.DEV) { showToast('Google sign-in is not configured. Configure Supabase Google OAuth first.', 'error'); return; }
     const user = { id: `demo-google-${Date.now()}`, email: 'google-preview@fynvera.local', name: 'Google Preview User', avatar: '', demo: true };
-    setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name: user.name })); setAuthMode(null); openWorkspace();
+    setCurrentUser(user); saveLocal('demoUser', user); setProfile((current) => ({ ...current, name: user.name })); setAuthMode(null); openWorkspace(user);
     showToast('Google button preview only. Connect Supabase to enable real Google OAuth.', 'info');
   }
 
@@ -630,6 +935,8 @@ export default function App() {
   }
 
   function toggleArticleWatch(article) {
+    if (!currentUser) { setAuthMode('signup'); showToast('Create a free account to save articles to your reading list.', 'info'); return; }
+    if (!supabase && !import.meta.env.DEV) { showToast('Account services are not configured. Please try again later.', 'error'); return; }
     setWatchlist((current) => {
       const exists = current.includes(article.id); const next = exists ? current.filter((id) => id !== article.id) : [...current, article.id];
       showToast(exists ? 'Removed from your reading list.' : 'Saved to your reading list.', 'success'); return next;
@@ -657,7 +964,7 @@ export default function App() {
         const newArticle = { author_id: currentUser.id, title: form.title.trim(), slug: articleSlug, excerpt: form.excerpt.trim(), category: form.category, subcategory: form.subcategory, author: currentUser.name, author_role: 'Fynvera Contributor', image_url: imageUrl, body: form.body, keywords: form.keywords, read_time: Math.max(1, Math.ceil(form.body.join(' ').split(/\s+/).length / 220)), status: 'published' };
         const { data, error } = await supabase.from('articles').insert(newArticle).select().single();
         if (error) throw error;
-        setArticles((current) => [{ ...form, id: data.id, author: data.author, authorRole: data.author_role, image: imageUrl, imageId: 'IMG-ARTICLE-CUSTOM', date: data.published_at?.slice(0, 10) || new Date().toISOString().slice(0, 10), readTime: data.read_time, slug: articleSlug }, ...current]);
+        setArticles((current) => [{ ...form, id: data.id, authorId: data.author_id, author: data.author, authorRole: data.author_role, image: imageUrl, imageId: 'IMG-ARTICLE-CUSTOM', date: data.published_at?.slice(0, 10) || new Date().toISOString().slice(0, 10), readTime: data.read_time, slug: articleSlug }, ...current]);
         return { ok: true, message: 'Article published to the connected database.' };
       } catch (error) { return { message: `${error.message} Check the article_editors allow-list, articles table, and article-images bucket policies.` }; }
     }
@@ -740,11 +1047,11 @@ export default function App() {
   return (
     <div className="app-shell">
       <Header onHome={() => navigateCategory('Home')} onCategory={navigateCategory} onAuth={openAuth} onWorkspace={openWorkspace} onSearch={() => setSearchOpen(true)} user={currentUser} activeView={activeView}/>
-      {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={changeAvatar} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onCalculator={openCalculator} onAuth={openAuth} onCategory={navigateCategory} showToast={showToast}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
-      : selectedArticle ? <ArticleDetail article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle}/>
-      : activeView === 'Home' ? <HomePage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onWorkspace={openWorkspace} onCalculator={openCalculator} onAllCalculators={openCalculatorLibrary} onToggleWatch={toggleArticleWatch} watchlist={watchlist}/>
-      : currentCategory ? <CategoryPage key={activeView} category={activeView} initialSubcategory={selectedSubcategory} articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator}/>
-      : <CategoryPage category="Stock Market" articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator}/>}
+      {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={changeAvatar} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onCalculator={openCalculator} onAuth={openAuth} onCategory={navigateCategory} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
+      : selectedArticle ? <ArticleDetail key={selectedArticle.id} article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle} user={currentUser} onAuth={openAuth} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/>
+      : activeView === 'Home' ? <HomePage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onWorkspace={openWorkspace} onCalculator={openCalculator} onAllCalculators={openCalculatorLibrary} onToggleWatch={toggleArticleWatch} watchlist={watchlist} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/>
+      : currentCategory ? <CategoryPage key={activeView} category={activeView} initialSubcategory={selectedSubcategory} articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/>
+      : <CategoryPage category="Stock Market" articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/>}
       {authMode && <AuthModal key={authMode} mode={authMode} onClose={() => setAuthMode(null)} onModeChange={setAuthMode} onSubmit={handleAuthSubmit} onGoogle={handleGoogleSignIn} busy={authBusy} configured={isSupabaseConfigured}/>}
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} articles={articles} onOpenArticle={(article) => { setSearchOpen(false); openArticle(article); }} onCategory={(category) => { setSearchOpen(false); navigateCategory(category); }}/>} 
       {calculator && <CalculatorModal key={calculator.id} calculator={calculator} onClose={() => setCalculatorId(null)} showToast={showToast}/>}

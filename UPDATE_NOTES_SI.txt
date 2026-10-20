@@ -1,0 +1,65 @@
+FYNVERA UPDATE PATCH - SINHALA INSTRUCTIONS
+============================================
+
+මෙය සම්පූර්ණ website එක වෙනුවට දාන්න ZIP එකක් නොවෙයි. ඔයාගේ දැනට වැඩ කරන project එකට files කිහිපයක් update කරන safe patch එකකි. Existing workspace pages/options ඉවත් කරලා නැහැ.
+
+1) BACKUP
+---------
+දැනට තියෙන local `fynvera-finance-site` folder එකේ copy එකක් backup එකක් විදිහට තියාගන්න.
+
+2) FILES OVERLAY කරන්න
+----------------------
+ZIP එක Extract කරලා එහි ඇති files, ඔයාගේ දැනට තියෙන project folder එකට copy කර same path එකේ files overwrite කරන්න:
+- src/App.jsx
+- src/styles.css
+- src/data/content.js
+- supabase/community_update.sql (new file)
+- supabase/COMMUNITY_TABLES_README.txt (new file)
+- README.md
+- SETUP_GUIDE_SI_EN.md
+
+`public/images` folder එක මකන්න එපා. Upload කළ RAR එකේ generated images files තිබුණේ නැහැ; දැනට GitHub/live site එකේ තියෙන images files රැකගන්න.
+
+3) SUPABASE MIGRATION
+---------------------
+දැනට `supabase/schema.sql` එක කලින් run කරලා තියෙනවා නම්, දැන් අලුත් `supabase/community_update.sql` file එක පමණක් Supabase Dashboard -> SQL Editor එකේ New query එකකට paste කර Run කරන්න.
+
+`schema.sql` කලින් කිසිදා run කරලා නැත්නම්, මුලින් ඒක run කරලා, ඊට පස්සේ `community_update.sql` run කරන්න.
+
+මෙම update SQL එක existing tables drop කරන්නේ නැහැ. එය public author profile, article likes/dislikes, comments සහ follow data සඳහා අලුත් tables සහ aggregate-count functions එකතු කරයි. Existing `watchlist` table එක article save/bookmark සඳහාම භාවිත කරනවා.
+
+4) TEST කරන්න
+--------------
+Project folder එකේ terminal/CMD open කර:
+  npm run build
+  npm run dev
+
+Build එක සාර්ථක නම් local site එකේ මේවා පරීක්ෂා කරන්න:
+- Desktop navigation: mouse pointer category එක උඩට ගියාම subcategory menu එක පෙනීම.
+- Mobile: category arrow/menu එක tap කර subcategories පෙන්වීම.
+- Logged out: public articles කියවන්න පුළුවන්; workspace button එක signup/login ඉල්ලයි.
+- Verified email එකෙන් sign in කර workspace open වීම.
+- Workspace -> Author Profile page එක පෙන්වීම.
+- Article -> like/dislike, comments, Save article.
+- Article author -> Follow / Following (එයම click කළාම Unfollow).
+- Markets -> Crypto tab එකෙන් Binance Spot live prices.
+- Workspace -> Watchlist එකේ BTC/ETH live values.
+- Workspace -> Log Out එකෙන් logged-out state එකට යාම.
+
+5) DEPLOY
+----------
+Local build test එකෙන් පසු modified files GitHub repo එකට upload/commit කර Vercel redeploy කරන්න. `node_modules` හෝ `.env` upload කරන්න එපා.
+
+6) BINANCE
+----------
+Public Binance Spot market-data stream පමණක් භාවිත කරයි; API key එකක් අවශ්‍ය නැහැ. BTC, ETH, BNB, SOL, XRP, ADA, DOGE, LINK, TRX, AVAX සඳහා USDT pair prices පෙන්වයි. Binance stream එක unreachable නම් UI එක Connecting/Snapshot status පෙන්වයි. Indices, forex සහ gold අගයන් තවම sample data වේ.
+
+7) SOCIAL LINKS
+---------------
+`src/data/content.js` හි `siteSocialLinks` තුළ X, TikTok, Facebook, Telegram සඳහා හිස් placeholders තියෙනවා. සැබෑ URLs දුන්නාට පසුව ඒවා එතැනට දාන්න; හිස් URLs සඳහා footer icon නොපෙන්වයි. Workspace -> Author Profile තුළ creator profile social URLs වෙනම save කළ හැකියි.
+
+SECURITY
+--------
+- Supabase `VITE_SUPABASE_URL` සහ public anon/publishable key පමණක් frontend env එකේ භාවිත කරන්න.
+- `service_role` / secret key frontend code, Vercel VITE variables හෝ GitHub වෙත දාන්න එපා.
+- මෙම patch එකේ full production build එක run කරලා තහවුරු කිරීමට environment එකේ Vite dependency එක නොතිබූ අතර dependency install timeout වුණා. JavaScript/JSX syntax transpile checks සාර්ථකයි. ඔයාගේ දැනට තියෙන project එකේ `npm run build` අනිවාර්යයෙන් run කර test කරලා ඉන්පසු deploy කරන්න.
