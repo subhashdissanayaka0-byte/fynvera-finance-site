@@ -61,7 +61,7 @@ function Brand({ onClick }) {
 
 function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activeView }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const mainLinks = [
     { label: 'Home', action: onHome },
     { label: 'Investing', action: () => onCategory('Investing') },
@@ -76,14 +76,26 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
       <div className="header-inner">
         <Brand onClick={onHome} />
         <nav className={`main-nav ${mobileOpen ? 'main-nav-open' : ''}`} aria-label="Main navigation">
-          {mainLinks.map((item) => (
-            <button key={item.label} className={`nav-link ${((activeView === item.label) || (item.label === 'Home' && activeView === 'Home')) ? 'nav-link-active' : ''}`} onClick={() => { item.action(); setMobileOpen(false); }}>
-              {item.label}{['Investing', 'Stock Market', 'Personal Finance', 'Crypto', 'Forex', 'Business & Economy'].includes(item.label) && <Icon name="ChevronDown" size={13} />}
-            </button>
-          ))}
-          <div className="more-nav-wrap">
-            <button className="nav-link" onClick={() => setMoreOpen((value) => !value)} aria-expanded={moreOpen}>More <Icon name="ChevronDown" size={13} /></button>
-            {moreOpen && <div className="nav-dropdown">{categories.filter((item) => !mainLinks.some((nav) => nav.label === item.name)).map((item) => <button key={item.name} onClick={() => { onCategory(item.name); setMoreOpen(false); setMobileOpen(false); }}>{item.name}<Icon name="ArrowUpRight" size={14} /></button>)}</div>}
+          {mainLinks.map((item) => {
+            const category = categories.find((entry) => entry.name === item.label);
+            const hasSubcategories = Boolean(category?.subcategories?.length) && item.label !== 'Home';
+            const isOpen = openDropdown === item.label;
+            return (
+              <div className={`nav-category-wrap ${isOpen ? 'nav-category-open' : ''}`} key={item.label}>
+                <div className="nav-category-controls">
+                  <button className={`nav-link ${activeView === item.label ? 'nav-link-active' : ''}`} onClick={() => { item.action(); setOpenDropdown(null); setMobileOpen(false); }}>{item.label}</button>
+                  {hasSubcategories && <button className="nav-dropdown-toggle" aria-label={`Show ${item.label} subcategories`} aria-expanded={isOpen} onClick={() => setOpenDropdown((current) => current === item.label ? null : item.label)}><Icon name="ChevronDown" size={13} /></button>}
+                </div>
+                {hasSubcategories && isOpen && <div className="nav-dropdown">
+                  <button className="nav-dropdown-all" onClick={() => { onCategory(item.label); setOpenDropdown(null); setMobileOpen(false); }}>All {item.label}<Icon name="ArrowUpRight" size={14} /></button>
+                  {category.subcategories.map((subcategory) => <button key={subcategory} onClick={() => { onCategory(item.label, subcategory); setOpenDropdown(null); setMobileOpen(false); }}>{subcategory}<Icon name="ChevronRight" size={14} /></button>)}
+                </div>}
+              </div>
+            );
+          })}
+          <div className={`more-nav-wrap ${openDropdown === 'More' ? 'more-nav-open' : ''}`}>
+            <button className="nav-link" onClick={() => setOpenDropdown((current) => current === 'More' ? null : 'More')} aria-expanded={openDropdown === 'More'}>More <Icon name="ChevronDown" size={13} /></button>
+            {openDropdown === 'More' && <div className="nav-dropdown">{categories.filter((item) => !mainLinks.some((nav) => nav.label === item.name)).map((item) => <button key={item.name} onClick={() => { onCategory(item.name); setOpenDropdown(null); setMobileOpen(false); }}>{item.name}<Icon name="ArrowUpRight" size={14} /></button>)}</div>}
           </div>
         </nav>
         <div className="header-actions">
@@ -228,10 +240,10 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
   );
 }
 
-function CategoryPage({ category, articles, onOpenArticle, onCategory, onToggleWatch, watchlist, onWorkspace, onCalculator }) {
+function CategoryPage({ category, initialSubcategory = 'All', articles, onOpenArticle, onCategory, onToggleWatch, watchlist, onWorkspace, onCalculator }) {
   const selected = categories.find((item) => item.name === category) || categories[0];
-  const [selectedSub, setSelectedSub] = useState('All');
-  useEffect(() => setSelectedSub('All'), [category]);
+  const [selectedSub, setSelectedSub] = useState(initialSubcategory);
+  useEffect(() => setSelectedSub(initialSubcategory || 'All'), [category, initialSubcategory]);
   const list = articles.filter((article) => article.category === selected.name && (selectedSub === 'All' || article.subcategory === selectedSub));
   const displayList = list.length ? list : articles.filter((article) => ['Stock Market', 'Personal Finance', 'Crypto', 'Forex'].includes(article.category)).slice(0, 3);
   return (
@@ -438,6 +450,7 @@ function slugify(value) {
 
 export default function App() {
   const [activeView, setActiveView] = useState('Home');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('All');
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [workspacePage, setWorkspacePage] = useState('Dashboard');
@@ -457,7 +470,7 @@ export default function App() {
   const [activeWatchMarket, setActiveWatchMarket] = useState(() => loadLocal('marketWatchlist', ['SPX', 'BTC']));
 
   const showToast = (message, type = 'info') => { setToast({ message, type, id: Date.now() }); window.setTimeout(() => setToast((value) => value?.message === message ? null : value), 3800); };
-  const navigateCategory = (name) => { setSelectedArticle(null); setWorkspaceOpen(false); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const navigateCategory = (name, subcategory = 'All') => { setSelectedArticle(null); setWorkspaceOpen(false); setSelectedSubcategory(subcategory || 'All'); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const openWorkspace = () => { setWorkspaceOpen(true); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const openCalculatorLibrary = () => { setWorkspaceOpen(true); setWorkspacePage('Tools & Calculators'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const navigateWorkspace = (page) => {
@@ -730,7 +743,7 @@ export default function App() {
       {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={changeAvatar} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onCalculator={openCalculator} onAuth={openAuth} onCategory={navigateCategory} showToast={showToast}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
       : selectedArticle ? <ArticleDetail article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle}/>
       : activeView === 'Home' ? <HomePage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onWorkspace={openWorkspace} onCalculator={openCalculator} onAllCalculators={openCalculatorLibrary} onToggleWatch={toggleArticleWatch} watchlist={watchlist}/>
-      : currentCategory ? <CategoryPage key={activeView} category={activeView} articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator}/>
+      : currentCategory ? <CategoryPage key={activeView} category={activeView} initialSubcategory={selectedSubcategory} articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator}/>
       : <CategoryPage category="Stock Market" articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator}/>}
       {authMode && <AuthModal key={authMode} mode={authMode} onClose={() => setAuthMode(null)} onModeChange={setAuthMode} onSubmit={handleAuthSubmit} onGoogle={handleGoogleSignIn} busy={authBusy} configured={isSupabaseConfigured}/>}
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} articles={articles} onOpenArticle={(article) => { setSearchOpen(false); openArticle(article); }} onCategory={(category) => { setSearchOpen(false); navigateCategory(category); }}/>} 
