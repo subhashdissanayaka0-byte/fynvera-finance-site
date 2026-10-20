@@ -125,6 +125,7 @@ export const markets = [
 export const workspaceItems = [
   { label: 'Dashboard', icon: 'LayoutDashboard' },
   { label: 'My Portfolio', icon: 'BriefcaseBusiness' },
+  { label: 'Author Profile', icon: 'BadgeCheck' },
   { label: 'Watchlist', icon: 'Star' },
   { label: 'News & Insights', icon: 'Newspaper' },
   { label: 'Markets', icon: 'ChartNoAxesCombined' },
@@ -137,7 +138,6 @@ export const workspaceItems = [
   { label: 'Tools & Calculators', icon: 'Calculator' },
   { label: 'Regulatory Policy', icon: 'Scale' },
   { label: 'Settings', icon: 'Settings2' },
-  { label: 'Author Profile', icon: 'BadgeCheck' },
   { label: 'Log Out', icon: 'LogOut', special: true }
 ];
 
