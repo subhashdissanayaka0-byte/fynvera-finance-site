@@ -112,20 +112,35 @@ export const seedArticles = [
   }
 ];
 
-// Demonstration market values are sample UI content, not a live price feed.
+// Instrument labels only. Market prices come from the live quote feed in App.jsx;
+// never put invented/sample prices here because users may mistake them for real quotes.
 export const markets = [
-  { symbol: 'SPX', name: 'S&P 500', value: '5,812.44', change: '+1.24%', positive: true, color: '#5d91ff' },
-  { symbol: 'NDX', name: 'NASDAQ', value: '20,148.52', change: '+1.56%', positive: true, color: '#9e8cff' },
-  { symbol: 'DJI', name: 'DOW JONES', value: '43,239.98', change: '+0.98%', positive: true, color: '#42c6fb' },
-  { symbol: 'BTC', name: 'BITCOIN', value: '$91,432.17', change: '+2.36%', positive: true, color: '#ffab3e' },
-  { symbol: 'ETH', name: 'ETHEREUM', value: '$3,067.45', change: '+1.82%', positive: true, color: '#7ea8ff' },
-  { symbol: 'GLD', name: 'GOLD', value: '$2,334.60', change: '+0.71%', positive: true, color: '#ffc44d' }
+  { symbol: 'SPX', name: 'S&P 500', value: '—', change: '—', positive: false, color: '#5d91ff' },
+  { symbol: 'NDX', name: 'NASDAQ 100', value: '—', change: '—', positive: false, color: '#9e8cff' },
+  { symbol: 'DJI', name: 'DOW JONES', value: '—', change: '—', positive: false, color: '#42c6fb' },
+  { symbol: 'AAPL', name: 'APPLE', value: '—', change: '—', positive: false, color: '#80a5bb' },
+  { symbol: 'JPM', name: 'JPMORGAN CHASE', value: '—', change: '—', positive: false, color: '#5d91ff' },
+  { symbol: 'EUR/USD', name: 'EUR / USD', value: '—', change: '—', positive: false, color: '#5d91ff' },
+  { symbol: 'GBP/USD', name: 'GBP / USD', value: '—', change: '—', positive: false, color: '#42c6fb' },
+  { symbol: 'USD/JPY', name: 'USD / JPY', value: '—', change: '—', positive: false, color: '#9e8cff' },
+  { symbol: 'BTC', name: 'BITCOIN', value: '—', change: '—', positive: false, color: '#ffab3e' },
+  { symbol: 'ETH', name: 'ETHEREUM', value: '—', change: '—', positive: false, color: '#7ea8ff' },
+  { symbol: 'BNB', name: 'BNB', value: '—', change: '—', positive: false, color: '#ffc44d' },
+  { symbol: 'SOL', name: 'SOLANA', value: '—', change: '—', positive: false, color: '#9e8cff' },
+  { symbol: 'XRP', name: 'XRP', value: '—', change: '—', positive: false, color: '#8db3d8' },
+  { symbol: 'ADA', name: 'CARDANO', value: '—', change: '—', positive: false, color: '#5d91ff' },
+  { symbol: 'DOGE', name: 'DOGECOIN', value: '—', change: '—', positive: false, color: '#d8c46a' },
+  { symbol: 'LINK', name: 'CHAINLINK', value: '—', change: '—', positive: false, color: '#6b9cff' },
+  { symbol: 'TRX', name: 'TRON', value: '—', change: '—', positive: false, color: '#f46e7b' },
+  { symbol: 'AVAX', name: 'AVALANCHE', value: '—', change: '—', positive: false, color: '#f08080' },
+  { symbol: 'GOLD', name: 'GOLD / USD', value: '—', change: '—', positive: false, color: '#ffc44d' },
+  { symbol: 'SILVER', name: 'SILVER / USD', value: '—', change: '—', positive: false, color: '#b7c8d8' },
+  { symbol: 'WTI', name: 'WTI CRUDE OIL', value: '—', change: '—', positive: false, color: '#f08080' }
 ];
 
 export const workspaceItems = [
   { label: 'Dashboard', icon: 'LayoutDashboard' },
   { label: 'My Portfolio', icon: 'BriefcaseBusiness' },
-  { label: 'Author Profile', icon: 'BadgeCheck' },
   { label: 'Watchlist', icon: 'Star' },
   { label: 'News & Insights', icon: 'Newspaper' },
   { label: 'Markets', icon: 'ChartNoAxesCombined' },
@@ -138,6 +153,8 @@ export const workspaceItems = [
   { label: 'Tools & Calculators', icon: 'Calculator' },
   { label: 'Regulatory Policy', icon: 'Scale' },
   { label: 'Settings', icon: 'Settings2' },
+  { label: 'Author Profile', icon: 'BadgeCheck' },
+  { label: 'Publish Article', icon: 'FilePlus2', subItem: true },
   { label: 'Log Out', icon: 'LogOut', special: true }
 ];
 
@@ -153,6 +170,11 @@ export const calculatorList = [
   { id: 'compound', name: 'Compound Interest', icon: 'TrendingUp', description: 'Project growth on savings and investments', group: 'Investing' },
   { id: 'mortgage', name: 'Mortgage Calculator', icon: 'House', description: 'Estimate monthly home loan payments', group: 'Real Estate' },
   { id: 'retirement', name: 'Retirement Planner', icon: 'Umbrella', description: 'Estimate a future retirement balance', group: 'Personal Finance' },
-  { id: 'currency', name: 'Currency Converter', icon: 'ArrowLeftRight', description: 'Convert currencies with editable sample rates', group: 'Forex' },
-  { id: 'loan', name: 'Loan & Debt Payoff', icon: 'CreditCard', description: 'Estimate monthly debt repayments', group: 'Personal Finance' }
+  { id: 'currency', name: 'Currency Converter', icon: 'ArrowLeftRight', description: 'Convert currencies using a live reference rate when available', group: 'Forex' },
+  { id: 'loan', name: 'Loan & Debt Payoff', icon: 'CreditCard', description: 'Estimate monthly debt repayments', group: 'Personal Finance' },
+  { id: 'savings-goal', name: 'Savings Goal Planner', icon: 'PiggyBank', description: 'Estimate the monthly savings needed for a target', group: 'Personal Finance' },
+  { id: 'inflation', name: 'Inflation Calculator', icon: 'ChartNoAxesColumnIncreasing', description: 'Estimate how inflation changes purchasing power', group: 'Personal Finance' },
+  { id: 'stock-return', name: 'Investment Return', icon: 'ChartCandlestick', description: 'Calculate total return and percentage change', group: 'Investing' },
+  { id: 'risk-reward', name: 'Risk / Reward Calculator', icon: 'Scale', description: 'Compare possible reward with planned risk', group: 'Investing' },
+  { id: 'break-even', name: 'Break-even Calculator', icon: 'Target', description: 'Estimate the break-even price after fees', group: 'Investing' }
 ];

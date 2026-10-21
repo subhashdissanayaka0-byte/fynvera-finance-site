@@ -601,20 +601,7 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 .workspace-article-grid .article-card-body > p { font-size: 9px; }
 .workspace-footer-note { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 27px 0 0; padding: 14px 0 4px; border-top: 1px solid rgba(72, 142, 186, .12); color: #5f7b96; font-size: 8px; }
 .workspace-footer-note svg { color: #20c9a9; }
-.workspace-sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-}
 
-.workspace-nav {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: 20px;
-}
 /* Workspace portfolio, news editor and account settings */
 .portfolio-total-card { display: flex; align-items: center; justify-content: space-between; gap: 22px; overflow: hidden; min-height: 160px; padding: 23px 27px; border: 1px solid rgba(42, 167, 211, .25); border-radius: 17px; background: radial-gradient(ellipse at 10% 110%, rgba(40, 98, 211, .17), transparent 42%), radial-gradient(ellipse at 97% 0%, rgba(32, 210, 230, .12), transparent 48%), linear-gradient(120deg, #08203a, #061a30); }
 .portfolio-total-card > div:first-child { display: flex; flex-direction: column; gap: 8px; }
@@ -1179,3 +1166,85 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   .author-profile-stats-grid .summary-card { padding: 13px; }
   .author-profile-form-panel { padding: 15px; }
 }
+
+/* Upgrade: keep the workspace navigation accessible even when it contains many sections. */
+.workspace-sidebar { min-height: 0; }
+.workspace-brand-row, .workspace-user-mini, .sidebar-section-label, .sidebar-bottom-card, .sidebar-footer { flex-shrink: 0; }
+.workspace-nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 172, 205, .38) transparent;
+  padding-bottom: 12px;
+}
+.workspace-nav::-webkit-scrollbar { width: 5px; }
+.workspace-nav::-webkit-scrollbar-track { background: transparent; }
+.workspace-nav::-webkit-scrollbar-thumb { border-radius: 99px; background: rgba(74, 172, 205, .38); }
+.workspace-nav-link-subitem { min-height: 33px; margin-left: 16px; width: calc(100% - 16px); border-left: 1px solid rgba(85, 158, 191, .25); border-radius: 0 8px 8px 0; font-size: 9px; }
+.workspace-sidebar-collapsed .workspace-nav-link-subitem { width: 100%; margin-left: 0; border-left-color: transparent; }
+
+/* Live market lists are searchable and scrollable instead of pushing the page extremely long. */
+.market-tabs { overflow-x: auto; scrollbar-width: thin; }
+.market-crypto-search { display: flex; align-items: center; gap: 8px; margin: 2px 0 10px; padding: 8px 10px; border: 1px solid rgba(70, 151, 195, .2); border-radius: 9px; background: rgba(5, 25, 44, .6); color: #7e9ab5; }
+.market-crypto-search input { min-width: 0; flex: 1; padding: 0; border: 0; outline: 0; background: transparent; color: #dcecf9; font-size: 10px; }
+.market-crypto-search input::placeholder { color: #6c86a1; }
+.market-crypto-search > span { flex: 0 0 auto; color: #6c8ba7; font-size: 8px; white-space: nowrap; }
+.market-rows-all-crypto { max-height: 460px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(74, 172, 205, .38) transparent; }
+.market-panel-compact .market-rows-all-crypto { max-height: 325px; }
+.market-pair-symbol { display: block; margin-top: 2px; color: #6485a4; font-size: 8px; font-weight: 600; }
+.market-empty-row { padding: 18px 6px; color: #849bb4; font-size: 10px; text-align: center; }
+.market-load-more { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; margin-top: 9px; padding: 9px; border: 1px solid rgba(65, 162, 199, .19); border-radius: 8px; background: rgba(13, 47, 69, .38); color: #75e4ef; font-size: 10px; font-weight: 750; cursor: pointer; }
+.market-load-more:hover { border-color: rgba(65, 210, 227, .45); background: rgba(16, 87, 106, .25); }
+
+/* Community polish: animate a successful Like, keep the dislike count private, and indent replies. */
+.article-top-follow { display: flex; align-items: center; margin: -7px 0 14px; }
+.article-top-follow .follow-author-button, .article-top-follow .author-self-label { margin: 0; }
+.reaction-like-pop { animation: fynvera-like-pop .42s cubic-bezier(.2,.8,.2,1); }
+@keyframes fynvera-like-pop {
+  0% { transform: scale(1); }
+  34% { transform: scale(1.12); box-shadow: 0 0 0 5px rgba(42, 213, 188, .1); }
+  68% { transform: scale(.97); }
+  100% { transform: scale(1); }
+}
+.article-comment-reply { margin-left: 25px; padding-left: 13px; border-left: 2px solid rgba(56, 186, 211, .28); }
+.article-comment-content { min-width: 0; }
+.comment-action-row { display: flex; flex-wrap: wrap; align-items: center; gap: 13px; margin-top: 7px; }
+.comment-action-row button { padding: 0; border: 0; background: none; color: #70bbd7; font-size: 9px; font-weight: 750; cursor: pointer; }
+.comment-action-row button:hover { color: #70eff4; }
+.comment-action-row button:disabled { opacity: .5; cursor: not-allowed; }
+.comment-edit-form { display: grid; gap: 9px; margin-top: 8px; }
+.comment-edit-form > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+/* Dedicated author article studio styles. */
+.article-studio-intro { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 15px 0 19px; padding: 15px 17px; border: 1px solid rgba(69, 160, 197, .19); border-radius: 13px; background: linear-gradient(110deg, rgba(15, 52, 78, .68), rgba(7, 25, 44, .45)); }
+.article-studio-intro > div { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.studio-intro-icon { display: grid; place-items: center; width: 39px; height: 39px; flex: 0 0 auto; border: 1px solid rgba(49, 198, 219, .23); border-radius: 11px; background: rgba(31, 182, 205, .1); color: #67e2ed; }
+.article-studio-intro strong { color: #e3f2ff; font-size: 11px; }
+.article-studio-intro p { margin: 4px 0 0; color: #89a4bf; font-size: 10px; line-height: 1.6; }
+.article-studio-intro .data-pill { flex: 0 0 auto; }
+.article-studio-editor { scroll-margin-top: 90px; }
+.image-upload-zone-dragging { border-color: #39d7e5 !important; background: rgba(18, 111, 135, .25) !important; box-shadow: 0 0 0 3px rgba(37, 203, 225, .08); }
+.article-edited-label { display: inline-flex; align-items: center; padding: 3px 5px; border: 1px solid rgba(72, 218, 186, .23); border-radius: 4px; background: rgba(42, 184, 151, .1); color: #66e2be !important; font-size: 7px !important; font-weight: 900; letter-spacing: .08em; }
+.news-insights-search:focus-within { border-color: rgba(55, 205, 224, .55); box-shadow: 0 0 0 3px rgba(55, 205, 224, .07); }
+
+@media (max-width: 700px) {
+  .article-studio-intro { align-items: flex-start; flex-direction: column; }
+  .article-studio-intro .data-pill { align-self: flex-start; }
+  .market-rows-all-crypto { max-height: 360px; }
+  .article-comment-reply { margin-left: 12px; padding-left: 9px; }
+}
+
+.public-author-info { margin: 2px 0 12px; }
+.public-author-info > p { margin: 6px 0; color: #89a4be; font-size: 10px; line-height: 1.65; }
+.public-author-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.public-author-links a { display: inline-flex; align-items: center; gap: 4px; padding: 5px 7px; border: 1px solid rgba(67, 165, 196, .22); border-radius: 6px; background: rgba(15, 51, 75, .5); color: #9bd9e4; font-size: 8px; font-weight: 750; text-decoration: none; }
+.public-author-links a:hover { border-color: rgba(57, 211, 225, .55); color: #6bf2f2; }
+
+.feature-story-empty { display: grid; justify-items: start; gap: 11px; padding: clamp(24px, 4vw, 42px); border: 1px dashed rgba(74, 160, 198, .27); border-radius: 16px; background: radial-gradient(ellipse at 5% 0%, rgba(27, 153, 183, .1), transparent 60%), rgba(6, 28, 48, .48); }
+.feature-story-empty > svg { color: #51d9e7; }
+.feature-story-empty strong { color: #e2f1ff; font-size: 15px; }
+.feature-story-empty span { max-width: 520px; color: #8ca6bf; font-size: 11px; line-height: 1.7; }
+.feature-story-empty > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+@media (max-width: 520px) { .feature-story-empty { padding: 22px 17px; } .feature-story-empty strong { font-size: 13px; } }

@@ -1,0 +1,13 @@
+FYNVERA UPDATE — මුලින් මෙය කියවන්න
+
+1. Supabase database backup එකක් ගන්න.
+2. Supabase Dashboard > SQL Editor වෙත යන්න.
+3. මේ project එකේ supabase/fynvera_upgrade_migration.sql file එක පමණක් run කරන්න.
+4. පැරණි schema.sql හෝ community_update.sql නැවත run කරන්න එපා.
+5. Local test: npm ci, npm run dev, පසුව npm run build.
+6. Publish, draft, edit/EDITED, delete, likes/dislikes, comment reply/edit/delete, bookmark, follow/unfollow සහ profile counts test කරන්න.
+7. පසුව වෙනස් කළ files GitHub repository එකට commit කර Vercel deployment එක බලන්න.
+
+වැදගත්: ZIP එකේ node_modules, .env හෝ private keys නැහැ.
+ඔබගේ upload කළ RAR එකේ JPG images නැති නිසා GitHub එකේ දැනට තිබෙන public/images/article-*.jpg files delete නොකර තබාගන්න.
+සම්පූර්ණ පියවර: FYNVERA_UPGRADE_NOTES_SI.md
