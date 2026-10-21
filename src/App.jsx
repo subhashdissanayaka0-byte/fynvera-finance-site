@@ -1,6 +1,7 @@
 // Main application: navigation, articles, workspace, calculators, demo mode and optional Supabase integration.
 import React, { useEffect, useMemo, useState } from 'react';
 import * as Lucide from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { categories, calculatorList, markets, seedArticles, workspaceItems, siteSocialLinks } from './data/content.js';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadLocal, saveLocal } from './lib/storage.js';
@@ -1617,6 +1618,7 @@ export default function App() {
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} articles={articles} onOpenArticle={(article) => { setSearchOpen(false); openArticle(article); }} onCategory={(category) => { setSearchOpen(false); navigateCategory(category); }}/>} 
       {calculator && <CalculatorModal key={calculator.id} calculator={calculator} onClose={() => setCalculatorId(null)} showToast={showToast}/>}
       <Toast toast={toast} onClose={() => setToast(null)}/>
+      <Analytics />
     </div>
   );
 }
