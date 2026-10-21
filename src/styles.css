@@ -1248,3 +1248,105 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 .feature-story-empty span { max-width: 520px; color: #8ca6bf; font-size: 11px; line-height: 1.7; }
 .feature-story-empty > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
 @media (max-width: 520px) { .feature-story-empty { padding: 22px 17px; } .feature-story-empty strong { font-size: 13px; } }
+
+
+/* Article library polish: keep filters and row actions consistent with Fynvera's dark theme. */
+.news-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 24px;
+}
+.news-filter-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid rgba(105, 150, 184, .25);
+  border-radius: 9px;
+  background: rgba(10, 31, 51, .86);
+  color: #c9d8e8;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+}
+.news-filter-row button:hover {
+  border-color: rgba(49, 204, 210, .6);
+  background: rgba(23, 70, 87, .7);
+  color: #f2fcff;
+}
+.news-filter-row button.news-filter-active {
+  border-color: rgba(42, 211, 204, .8);
+  background: #20b6b0;
+  color: #041b28;
+  font-weight: 750;
+  box-shadow: 0 4px 16px rgba(32, 182, 176, .12);
+}
+.manage-article-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.manage-article-actions .button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1;
+}
+.manage-article-actions .button-danger-soft {
+  border: 1px solid rgba(255, 111, 135, .32);
+  background: rgba(91, 29, 48, .32);
+  color: #ffb7c2;
+}
+.manage-article-actions .button-danger-soft:hover {
+  border-color: rgba(255, 111, 135, .68);
+  background: rgba(119, 35, 58, .48);
+  color: #ffe5e9;
+}
+@media (max-width: 760px) {
+  .manage-article-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 11px;
+    padding: 14px;
+  }
+  .manage-article-row > .image-slot {
+    flex-basis: 76px;
+    width: 76px;
+    height: 58px;
+    min-height: 58px;
+  }
+  .manage-article-copy {
+    flex: 1 1 calc(100% - 95px);
+  }
+  .manage-article-copy > button {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .manage-article-actions {
+    width: 100%;
+    margin-left: 0;
+    padding-top: 2px;
+  }
+  .manage-article-actions .button {
+    flex: 1 1 auto;
+  }
+  .news-filter-row {
+    gap: 7px;
+    margin: 15px 0 20px;
+  }
+  .news-filter-row button {
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+}
