@@ -1249,18 +1249,32 @@ function articleWasEdited(article) {
   return new Date(article.updatedAt).getTime() > new Date(article.createdAt).getTime();
 }
 
+function readFynveraRoute() {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  if (params.get('fynvera') !== '1') return {};
+  return {
+    view: params.get('view') || 'Home',
+    subcategory: params.get('subcategory') || 'All',
+    workspace: params.get('workspace') === '1',
+    workspacePage: params.get('workspacePage') || 'Dashboard',
+    calculator: params.get('calculator') || null
+  };
+}
+
 export default function App() {
-  const [activeView, setActiveView] = useState('Home');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('All');
+  const initialRoute = readFynveraRoute();
+  const [activeView, setActiveView] = useState(initialRoute.view || 'Home');
+  const [selectedSubcategory, setSelectedSubcategory] = useState(initialRoute.subcategory || 'All');
   const [selectedArticle, setSelectedArticle] = useState(null);
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const [workspacePage, setWorkspacePage] = useState('Dashboard');
+  const [workspaceOpen, setWorkspaceOpen] = useState(Boolean(initialRoute.workspace));
+  const [workspacePage, setWorkspacePage] = useState(initialRoute.workspacePage || 'Dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
   const [authMode, setAuthMode] = useState(null);
   const [authBusy, setAuthBusy] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [calculatorId, setCalculatorId] = useState(null);
+  const [calculatorId, setCalculatorId] = useState(initialRoute.calculator);
   const [toast, setToast] = useState(null);
   // Never restore a browser-only preview identity as an authenticated session. Supabase restores real sessions below.
   const [currentUser, setCurrentUser] = useState(null);
@@ -1530,6 +1544,25 @@ export default function App() {
     window.addEventListener('fynvera-refresh', refresh); window.addEventListener('fynvera-navigate', navigate);
     return () => { window.removeEventListener('fynvera-refresh', refresh); window.removeEventListener('fynvera-navigate', navigate); };
   }, []);
+
+  // Persist the current in-app page in the URL so a refresh restores the same Fynvera view.
+  // Article links keep their existing ?article=... shareable URL format.
+  useEffect(() => {
+    const syncRoute = () => {
+      const params = new URLSearchParams();
+      params.set('fynvera', '1');
+      params.set('view', activeView || 'Home');
+      if (selectedSubcategory && selectedSubcategory !== 'All') params.set('subcategory', selectedSubcategory);
+      if (workspaceOpen) {
+        params.set('workspace', '1');
+        params.set('workspacePage', workspacePage || 'Dashboard');
+      }
+      if (calculatorId) params.set('calculator', calculatorId);
+      const nextHash = `#${params.toString()}`;
+      if (window.location.hash !== nextHash) window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+    };
+    syncRoute();
+  }, [activeView, selectedSubcategory, workspaceOpen, workspacePage, calculatorId]);
 
   // Open the article passed in a share URL, once the current article list is available.
   useEffect(() => {
