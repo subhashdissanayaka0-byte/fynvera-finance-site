@@ -1560,6 +1560,8 @@ export default function App() {
       if (calculatorId) params.set('calculator', calculatorId);
       const nextHash = `#${params.toString()}`;
       const search = new URLSearchParams(window.location.search);
+      // Do not erase an incoming shared-article URL while the article list is still loading.
+      if (search.has('article') && !selectedArticle) return;
       if (selectedArticle) search.set('article', selectedArticle.slug || selectedArticle.id);
       else search.delete('article');
       const nextUrl = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ''}${nextHash}`;
