@@ -1670,3 +1670,20 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
     display: none;
   }
 }
+
+
+/* Password recovery link in the sign-in form. */
+.auth-forgot-link {
+  align-self: flex-end;
+  border: 0;
+  padding: 2px 0;
+  background: transparent;
+  color: var(--accent, #18a9b8);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-forgot-link:hover {
+  text-decoration: underline;
+}
