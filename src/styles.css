@@ -1609,3 +1609,23 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
     right: 7px;
   }
 }
+
+/* Keep More-menu nested subcategories inside the visible screen area. */
+@media (min-width: 1051px) {
+  .more-category-dropdown {
+    right: -8px;
+    max-height: min(72vh, 620px);
+    overflow-y: auto;
+    overflow-x: visible;
+  }
+  .more-subcategory-wrap {
+    position: relative;
+  }
+  .more-subdropdown {
+    left: auto;
+    right: calc(100% - 4px);
+    top: 0;
+    max-height: min(65vh, 540px);
+    overflow-y: auto;
+  }
+}
