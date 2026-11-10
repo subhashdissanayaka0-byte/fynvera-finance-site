@@ -1559,10 +1559,14 @@ export default function App() {
       }
       if (calculatorId) params.set('calculator', calculatorId);
       const nextHash = `#${params.toString()}`;
-      if (window.location.hash !== nextHash) window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}${nextHash}`);
+      const search = new URLSearchParams(window.location.search);
+      if (selectedArticle) search.set('article', selectedArticle.slug || selectedArticle.id);
+      else search.delete('article');
+      const nextUrl = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ''}${nextHash}`;
+      if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== nextUrl) window.history.replaceState(window.history.state, '', nextUrl);
     };
     syncRoute();
-  }, [activeView, selectedSubcategory, workspaceOpen, workspacePage, calculatorId]);
+  }, [activeView, selectedSubcategory, workspaceOpen, workspacePage, calculatorId, selectedArticle]);
 
   // Open the article passed in a share URL, once the current article list is available.
   useEffect(() => {
