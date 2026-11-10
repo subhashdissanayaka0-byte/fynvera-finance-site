@@ -1629,3 +1629,44 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
     overflow-y: auto;
   }
 }
+
+/* Reliable More menu: expand subcategories in-flow instead of opening a clipped side panel. */
+.more-category-dropdown {
+  display: flex;
+  flex-direction: column;
+  max-height: min(72vh, 620px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.more-category-dropdown .more-subcategory-wrap {
+  display: block;
+  width: 100%;
+  flex: 0 0 auto;
+}
+.more-category-dropdown .more-category-row {
+  width: 100%;
+}
+.more-category-dropdown .more-subdropdown {
+  position: static;
+  display: none;
+  width: auto;
+  min-width: 0;
+  max-height: none;
+  margin: 3px 0 9px 12px;
+  padding: 5px;
+  border: 0;
+  border-left: 1px solid rgba(62, 161, 207, .35);
+  border-radius: 0 8px 8px 0;
+  background: rgba(4, 22, 39, .88);
+  box-shadow: none;
+}
+.more-category-dropdown .more-subcategory-wrap.more-subcategory-open > .more-subdropdown {
+  display: flex;
+}
+@media (hover: hover) and (pointer: fine) {
+  .more-category-dropdown .more-subcategory-wrap:hover > .more-subdropdown,
+  .more-category-dropdown .more-subcategory-wrap:focus-within:not(.more-subcategory-open) > .more-subdropdown {
+    display: none;
+  }
+}
