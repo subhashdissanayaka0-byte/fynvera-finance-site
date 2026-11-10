@@ -1482,3 +1482,54 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
     margin-bottom: 15px;
   }
 }
+
+/* Keep both authentication actions visible on medium desktop widths. */
+@media (min-width: 1051px) and (max-width: 1350px) {
+  .header-inner {
+    width: calc(100% - 32px);
+    gap: 9px;
+  }
+  .brand {
+    flex: 0 0 158px;
+    min-width: 158px;
+    gap: 7px;
+  }
+  .brand-mark {
+    width: 31px;
+  }
+  .brand-mark svg {
+    width: 29px;
+    height: 29px;
+  }
+  .brand-words strong {
+    font-size: 17px;
+  }
+  .brand-words small {
+    font-size: 7px;
+  }
+  .main-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 4px;
+  }
+  .nav-link {
+    padding-inline: 2px;
+    font-size: 9px;
+  }
+  .header-actions {
+    flex: 0 0 auto;
+    gap: 4px;
+    margin-left: 0;
+  }
+  .header-actions .search-trigger {
+    width: 30px;
+    flex: 0 0 30px;
+  }
+  .header-signin,
+  .header-signup {
+    min-width: 0;
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: 9px;
+  }
+}
