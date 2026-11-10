@@ -1533,3 +1533,79 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
     font-size: 9px;
   }
 }
+
+/* Give desktop navigation its own full-width row for a cleaner, readable header. */
+@media (min-width: 1051px) and (max-width: 1350px) {
+  .site-header {
+    height: 108px;
+  }
+  .header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    gap: 5px 12px;
+    width: calc(100% - 48px);
+    height: 100%;
+    padding-block: 7px;
+    box-sizing: border-box;
+  }
+  .brand {
+    order: 0;
+    flex: 0 0 auto;
+    min-width: 215px;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 40px;
+    height: 40px;
+  }
+  .brand-mark svg {
+    width: 35px;
+    height: 35px;
+  }
+  .brand-words strong {
+    font-size: 21px;
+  }
+  .brand-words small {
+    font-size: 9px;
+  }
+  .header-actions {
+    order: 1;
+    flex: 0 0 auto;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .header-actions .search-trigger {
+    width: 38px;
+    flex: 0 0 38px;
+  }
+  .header-signin,
+  .header-signup {
+    min-width: 88px;
+    min-height: 39px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  .main-nav {
+    order: 2;
+    display: flex;
+    flex: 0 0 100%;
+    align-items: stretch;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    gap: 7px;
+  }
+  .nav-link {
+    justify-content: center;
+    padding-inline: 7px;
+    font-size: 11px;
+  }
+  .nav-link::after {
+    bottom: 0;
+    left: 7px;
+    right: 7px;
+  }
+}
