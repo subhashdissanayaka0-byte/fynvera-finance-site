@@ -621,6 +621,8 @@ function AuthModal({ mode, onClose, onModeChange, onSubmit, onGoogle, busy, conf
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const isSignup = mode === 'signup';
+  const isForgot = mode === 'forgot';
+  const isReset = mode === 'reset';
   const handleSubmit = async (event) => {
     event.preventDefault(); setMessage('');
     const result = await onSubmit({ mode, name, email, password });
@@ -631,17 +633,18 @@ function AuthModal({ mode, onClose, onModeChange, onSubmit, onGoogle, busy, conf
       <section className="auth-modal modal-card" role="dialog" aria-modal="true" aria-labelledby="auth-title">
         <button className="modal-close icon-button" onClick={onClose} aria-label="Close dialog"><Icon name="X" size={19}/></button>
         <div className="auth-modal-brand"><Brand onClick={onClose}/></div><div className="auth-modal-visual"><div className="auth-visual-orbit"/><Icon name="ChartNoAxesCombined" size={30}/><span>YOUR MONEY, WITH A PLAN</span></div>
-        <div className="auth-modal-copy"><div className="eyebrow"><span/> PERSONAL WORKSPACE</div><h2 id="auth-title">{isSignup ? 'Make room for your goals.' : 'Welcome back.'}</h2><p>{isSignup ? 'Create your free account to keep your watchlist, reading list and money notes together.' : 'Sign in to continue to your personal finance workspace.'}</p></div>
+        <div className="auth-modal-copy"><div className="eyebrow"><span/> PERSONAL WORKSPACE</div><h2 id="auth-title">{isSignup ? 'Make room for your goals.' : isForgot ? 'Reset your password.' : isReset ? 'Choose a new password.' : 'Welcome back.'}</h2><p>{isSignup ? 'Create your free account to keep your watchlist, reading list and money notes together.' : isForgot ? 'Enter your account email and we will send you a secure password reset link.' : isReset ? 'Create a new password to secure your Fynvera account.' : 'Sign in to continue to your personal finance workspace.'}</p></div>
         <form className="form-stack" onSubmit={handleSubmit}>
           {isSignup && <label className="field-label">Full name<div className="input-wrap"><Icon name="UserRound" size={17}/><input autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your full name" required/></div></label>}
-          <label className="field-label">Email address<div className="input-wrap"><Icon name="Mail" size={17}/><input autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required/></div></label>
-          <label className="field-label">Password<div className="input-wrap"><Icon name="LockKeyhole" size={17}/><input autoComplete={isSignup ? 'new-password' : 'current-password'} type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? 'At least 8 characters' : 'Your password'} minLength={8} required/><button type="button" className="input-trailing-button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'}><Icon name={showPassword ? 'EyeOff' : 'Eye'} size={17}/></button></div></label>
+          {!isReset && <label className="field-label">Email address<div className="input-wrap"><Icon name="Mail" size={17}/><input autoComplete="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required/></div></label>}
+          {!isForgot && <label className="field-label"> {isReset ? 'New password' : 'Password'}<div className="input-wrap"><Icon name="LockKeyhole" size={17}/><input autoComplete={isSignup || isReset ? 'new-password' : 'current-password'} type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup || isReset ? 'At least 8 characters' : 'Your password'} minLength={8} required/><button type="button" className="input-trailing-button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Hide password' : 'Show password'}><Icon name={showPassword ? 'EyeOff' : 'Eye'} size={17}/></button></div></label>}
+          {mode === 'signin' && <button type="button" className="auth-forgot-link" onClick={() => { onModeChange('forgot'); setMessage(''); }}>Forgot password?</button>}
           {message && <div className="form-message"><Icon name="MailCheck" size={16}/>{message}</div>}
-          <button type="submit" className="button button-primary button-block button-large" disabled={busy}>{busy ? <Icon name="LoaderCircle" className="spin" size={17}/> : null}{busy ? 'Please wait…' : isSignup ? 'Create free account' : 'Sign in securely'}<Icon name="ArrowRight" size={17}/></button>
+          <button type="submit" className="button button-primary button-block button-large" disabled={busy}>{busy ? <Icon name="LoaderCircle" className="spin" size={17}/> : null}{busy ? 'Please wait…' : isSignup ? 'Create free account' : isForgot ? 'Send reset link' : isReset ? 'Save new password' : 'Sign in securely'}<Icon name="ArrowRight" size={17}/></button>
         </form>
-        <div className="auth-divider"><span/>or continue with<span/></div><button className="button button-google button-block" onClick={onGoogle} disabled={!configured && !import.meta.env.DEV}><Icon name="Chrome" size={18}/>{configured ? 'Continue with Google' : import.meta.env.DEV ? 'Try Google sign-in (preview)' : 'Google sign-in unavailable'}</button>
+        {!isForgot && !isReset && <><div className="auth-divider"><span/>or continue with<span/></div><button className="button button-google button-block" onClick={onGoogle} disabled={!configured && !import.meta.env.DEV}><Icon name="Chrome" size={18}/>{configured ? 'Continue with Google' : import.meta.env.DEV ? 'Try Google sign-in (preview)' : 'Google sign-in unavailable'}</button></>}
         {!configured && <p className="preview-warning"><Icon name="Info" size={14}/> {import.meta.env.DEV ? 'Preview mode: accounts are simulated until you connect Supabase.' : 'Account services are temporarily unavailable. The site owner needs to configure Supabase.'}</p>}
-        <p className="auth-switch">{isSignup ? 'Already have an account?' : 'New to Fynvera?'} <button onClick={() => { onModeChange(isSignup ? 'signin' : 'signup'); setMessage(''); }}>{isSignup ? 'Sign in' : 'Create an account'}</button></p>
+        {!isReset && <p className="auth-switch">{isForgot ? 'Remember your password?' : isSignup ? 'Already have an account?' : 'New to Fynvera?'} <button onClick={() => { onModeChange(isSignup || isForgot ? 'signin' : 'signup'); setMessage(''); }}>{isSignup || isForgot ? 'Sign in' : 'Create an account'}</button></p>}
         <small className="auth-legal">By continuing, you agree to the site terms and privacy policy. Fynvera provides financial education, not personalized investment advice.</small>
       </section>
     </div>
@@ -1468,8 +1471,13 @@ export default function App() {
       const { data: profileRow } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
       if (profileRow && isMounted) setProfile((current) => ({ ...current, name: profileRow.full_name || nextUser.name, country: profileRow.country || '', currency: profileRow.currency || 'USD', experience: profileRow.experience || 'Beginner', goal: profileRow.goal || current.goal, riskLevel: profileRow.risk_level || current.riskLevel || 'Moderate', monthlyTarget: String(profileRow.monthly_target ?? ''), notes: profileRow.notes || '', avatar: profileRow.avatar_url || nextUser.avatar || '' }));
     }).catch((error) => console.warn('Could not restore the session.', error));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
+      if (event === 'PASSWORD_RECOVERY') {
+        setWorkspaceOpen(false);
+        setSelectedArticle(null);
+        setAuthMode('reset');
+      }
       if (!session?.user) {
         // A sign-out from this tab or another tab must not leave the private workspace visible.
         setCurrentUser(null); saveLocal('demoUser', null); setWorkspaceOpen(false); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Home');
@@ -1597,6 +1605,20 @@ export default function App() {
     setAuthBusy(true);
     try {
       if (supabase) {
+        if (mode === 'forgot') {
+          const redirectTo = new URL(window.location.origin);
+          redirectTo.searchParams.set('password-recovery', '1');
+          const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: redirectTo.toString() });
+          if (error) throw error;
+          return { message: 'If an account exists for this email, a password reset link has been sent. Please check your inbox.' };
+        }
+        if (mode === 'reset') {
+          const { error } = await supabase.auth.updateUser({ password });
+          if (error) throw error;
+          setAuthMode(null);
+          showToast('Your password has been updated successfully.', 'success');
+          return { ok: true };
+        }
         if (mode === 'signup') {
           const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
           if (error) throw error;
