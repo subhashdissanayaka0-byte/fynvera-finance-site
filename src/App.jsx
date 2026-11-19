@@ -1396,6 +1396,10 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [calculatorId, setCalculatorId] = useState(initialRoute.calculator);
   const [toast, setToast] = useState(null);
+  const [avatarCrop, setAvatarCrop] = useState(null);
+  const [avatarZoom, setAvatarZoom] = useState(1);
+  const [avatarX, setAvatarX] = useState(50);
+  const [avatarY, setAvatarY] = useState(50);
   // Never restore a browser-only preview identity as an authenticated session. Supabase restores real sessions below.
   const [currentUser, setCurrentUser] = useState(null);
   const [articles, setArticles] = useState(() => {
@@ -1964,6 +1968,41 @@ export default function App() {
     }
   }
 
+  function openAvatarCrop(file) {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) { showToast('Please choose a JPG, PNG or WebP image.', 'error'); return; }
+    if (file.size > 5 * 1024 * 1024) { showToast('Choose a profile image smaller than 5 MB.', 'error'); return; }
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarCrop({ file, previewUrl });
+    setAvatarZoom(1); setAvatarX(50); setAvatarY(50);
+  }
+
+  function closeAvatarCrop() {
+    setAvatarCrop((current) => { if (current?.previewUrl) URL.revokeObjectURL(current.previewUrl); return null; });
+  }
+
+  async function confirmAvatarCrop() {
+    if (!avatarCrop?.previewUrl) return;
+    try {
+      const image = new Image();
+      image.src = avatarCrop.previewUrl;
+      await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; });
+      const side = Math.min(image.naturalWidth, image.naturalHeight) / avatarZoom;
+      const maxX = image.naturalWidth - side; const maxY = image.naturalHeight - side;
+      const sx = maxX * (avatarX / 100); const sy = maxY * (avatarY / 100);
+      const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
+      const context = canvas.getContext('2d');
+      context.imageSmoothingEnabled = true; context.imageSmoothingQuality = 'high';
+      context.drawImage(image, sx, sy, side, side, 0, 0, 512, 512);
+      const croppedFile = await new Promise((resolve) => canvas.toBlob((blob) => resolve(blob ? new File([blob], 'fynvera-profile.jpg', { type: 'image/jpeg', lastModified: Date.now() }) : null), 'image/jpeg', .9));
+      if (!croppedFile) { showToast('Could not crop this image. Please try another photo.', 'error'); return; }
+      closeAvatarCrop();
+      await changeAvatar(croppedFile);
+    } catch (error) {
+      showToast('Could not prepare this image. Please try another photo.', 'error');
+    }
+  }
+
   async function changeAvatar(file) {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showToast('Choose a profile image smaller than 5 MB.', 'error'); return; }
@@ -2028,7 +2067,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <Header onHome={() => navigateCategory('Home')} onCategory={navigateCategory} onAuth={openAuth} onWorkspace={openWorkspace} onSearch={() => setSearchOpen(true)} user={currentUser} activeView={activeView}/>
-      {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={changeAvatar} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onDeleteArticle={deleteArticle} onCalculator={openCalculator} onAuth={openAuth} onRegisterPasskey={handlePasskeyRegister} passkeyBusy={authBusy} onCategory={navigateCategory} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
+      {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={openAvatarCrop} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onDeleteArticle={deleteArticle} onCalculator={openCalculator} onAuth={openAuth} onRegisterPasskey={handlePasskeyRegister} passkeyBusy={authBusy} onCategory={navigateCategory} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
       : selectedArticle ? <ArticleDetail key={selectedArticle.id} article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle} user={currentUser} onAuth={openAuth} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/>
       : activeView === 'News & Insights' ? <NewsInsightsPage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist}/>
       : activeView === 'Home' ? <HomePage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onWorkspace={openWorkspace} onCalculator={openCalculator} onAllCalculators={openCalculatorLibrary} onToggleWatch={toggleArticleWatch} watchlist={watchlist} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/>
@@ -2037,6 +2076,17 @@ export default function App() {
       {authMode && <AuthModal key={authMode} mode={authMode} onClose={() => setAuthMode(null)} onModeChange={setAuthMode} onSubmit={handleAuthSubmit} onGoogle={handleGoogleSignIn} onPasskey={handlePasskeySignIn} busy={authBusy} configured={isSupabaseConfigured}/>}
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} articles={articles} onOpenArticle={(article) => { setSearchOpen(false); openArticle(article); }} onCategory={(category) => { setSearchOpen(false); navigateCategory(category); }}/>} 
       {calculator && <CalculatorModal key={calculator.id} calculator={calculator} onClose={() => setCalculatorId(null)} showToast={showToast}/>}
+      {avatarCrop && <div className="avatar-crop-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeAvatarCrop(); }}>
+        <section className="avatar-crop-modal" role="dialog" aria-modal="true" aria-labelledby="avatar-crop-title">
+          <div className="avatar-crop-heading"><div><span className="eyebrow">PROFILE PHOTO</span><h2 id="avatar-crop-title">Adjust your picture</h2><p>Move and zoom to fit your face inside the circle.</p></div><button type="button" className="icon-button" onClick={closeAvatarCrop} aria-label="Close crop editor"><Icon name="X" size={20}/></button></div>
+          <div className="avatar-crop-preview-area"><div className="avatar-crop-frame"><img src={avatarCrop.previewUrl} alt="Profile crop preview" style={{ width: `${avatarZoom * 100}%`, height: `${avatarZoom * 100}%`, left: `${50 - avatarX * avatarZoom}%`, top: `${50 - avatarY * avatarZoom}%` }}/><span className="avatar-crop-circle"/></div><div className="avatar-crop-small-preview"><img src={avatarCrop.previewUrl} alt="Circular profile preview" style={{ width: `${avatarZoom * 100}%`, height: `${avatarZoom * 100}%`, left: `${50 - avatarX * avatarZoom}%`, top: `${50 - avatarY * avatarZoom}%` }}/></div></div>
+          <div className="avatar-crop-controls"><label>Zoom <strong>{avatarZoom.toFixed(1)}×</strong><input type="range" min="1" max="3" step=".05" value={avatarZoom} onChange={(event) => setAvatarZoom(Number(event.target.value))}/></label>
+            <label>Horizontal position<input type="range" min="0" max="100" value={avatarX} onChange={(event) => setAvatarX(Number(event.target.value))}/></label>
+            <label>Vertical position<input type="range" min="0" max="100" value={avatarY} onChange={(event) => setAvatarY(Number(event.target.value))}/></label>
+          </div>
+          <div className="avatar-crop-footer"><button type="button" className="button button-outline" onClick={() => { setAvatarZoom(1); setAvatarX(50); setAvatarY(50); }}>Reset</button><button type="button" className="button button-outline" onClick={closeAvatarCrop}>Cancel</button><button type="button" className="button button-primary" onClick={confirmAvatarCrop}><Icon name="Check" size={16}/> Use this photo</button></div>
+        </section>
+      </div>}
       <FynveraAssistant activeView={activeView} workspaceOpen={workspaceOpen} workspacePage={workspacePage} articleTitle={selectedArticle?.title} onCategory={navigateCategory} onWorkspace={(page) => navigateWorkspace(page)} onCalculator={openCalculator} onAuth={openAuth}/>
       <Toast toast={toast} onClose={() => setToast(null)}/>
     </div>
