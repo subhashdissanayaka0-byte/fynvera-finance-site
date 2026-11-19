@@ -382,13 +382,33 @@ function FynveraAssistant({ activeView, workspaceOpen, workspacePage, articleTit
     return { text: 'I can help with FYNVERA navigation, articles, market pages, calculators, account access and workspace tools. You are currently viewing ' + current + '. Try asking “How do I start investing?”, “Open the compound interest calculator” or “How do I save an article?”' };
   }
 
-  function sendMessage(value = draft) {
+  async function sendMessage(value = draft) {
     const question = value.trim();
     if (!question) return;
-    const answer = getAnswer(question);
     const stamp = Date.now();
-    setMessages((current) => [...current, { id: 'user-' + stamp, role: 'user', text: question }, { id: 'assistant-' + (stamp + 1), role: 'assistant', ...answer }]);
+    const history = messages.filter((item) => item.id !== 'welcome').slice(-8).map(({ role, text }) => ({ role, text }));
+    setMessages((current) => [...current, { id: 'user-' + stamp, role: 'user', text: question }, { id: 'assistant-' + (stamp + 1), role: 'assistant', text: 'Thinking…', pending: true }]);
     setDraft('');
+    try {
+      const response = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: question,
+          history,
+          context: workspaceOpen ? 'Workspace: ' + workspacePage : articleTitle ? 'Reading article: ' + articleTitle : 'Current page: ' + activeView
+        })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.reply) throw new Error(payload.error || 'AI assistant is temporarily unavailable.');
+      setMessages((current) => current.map((item) => item.id === 'assistant-' + (stamp + 1) ? { ...item, text: payload.reply, pending: false } : item));
+    } catch (error) {
+      const fallback = getAnswer(question);
+      const note = error.message === 'AI_NOT_CONFIGURED'
+        ? 'AI connection is not configured yet. Showing the built-in FYNVERA help for now. '
+        : 'AI is temporarily unavailable. Showing the built-in FYNVERA help for now. ';
+      setMessages((current) => current.map((item) => item.id === 'assistant-' + (stamp + 1) ? { ...item, ...fallback, text: note + fallback.text, pending: false } : item));
+    }
   }
 
   function runAction(message) {
@@ -422,7 +442,7 @@ function FynveraAssistant({ activeView, workspaceOpen, workspacePage, articleTit
         <p className="assistant-disclaimer">Educational guidance only · Not financial advice</p>
       </section>}
       <button className={'assistant-launcher ' + (isOpen ? 'assistant-launcher-open' : '')} onClick={() => setIsOpen((open) => !open)} aria-label={isOpen ? 'Close FYNVERA assistant' : 'Open FYNVERA assistant'} aria-expanded={isOpen}>
-        {isOpen ? <Icon name="X" size={23}/> : <><Icon name="MessageCircle" size={22}/><span>Ask FYNVERA</span><i/></>}
+        {isOpen ? <Icon name="X" size={20}/> : <><Icon name="MessageCircle" size={19}/><span>Ask FYNVERA</span><i/></>}
       </button>
     </div>
   );
