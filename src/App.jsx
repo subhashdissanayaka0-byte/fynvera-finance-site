@@ -1808,7 +1808,7 @@ export default function App() {
     ]).then(([holdingResult, watchResult, financeResult, profileResult, marketWatchResult]) => {
       if (!isMounted) return;
       if (!holdingResult.error && holdingResult.data) {
-        setPortfolio(holdingResult.data.map((row) => ({ id: row.id, symbol: row.symbol, type: row.asset_type, value: Number(row.current_value) || 0, cost: Number(row.cost_basis) || 0, quantity: Number(row.quantity) || 1, buyPrice: Number(row.buy_price ?? row.cost_basis) || 0, fees: Number(row.fees) || 0, purchaseDate: row.purchase_date || '', quoteSymbol: row.quote_symbol || '', name: row.notes || 'Personal entry' })));
+        setPortfolio(holdingResult.data.map((row) => ({ id: row.id, symbol: row.symbol, type: row.asset_type, value: Number(row.current_value) || 0, cost: Number(row.cost_basis) || 0, quantity: Number(row.quantity) || 1, buyPrice: Number(row.buy_price) > 0 ? Number(row.buy_price) : Number(row.cost_basis) || 0, fees: Number(row.fees) || 0, purchaseDate: row.purchase_date || '', quoteSymbol: row.quote_symbol || '', name: row.notes || 'Personal entry' })));
       }
       if (!watchResult.error && watchResult.data) setWatchlist(watchResult.data.map((row) => row.article_id));
       if (!marketWatchResult.error && marketWatchResult.data) setActiveWatchMarket(marketWatchResult.data.map((row) => row.symbol));
