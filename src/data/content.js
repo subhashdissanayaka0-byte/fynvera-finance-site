@@ -141,6 +141,11 @@ export const markets = [
 export const workspaceItems = [
   { label: 'Dashboard', icon: 'LayoutDashboard' },
   { label: 'My Portfolio', icon: 'BriefcaseBusiness' },
+  { label: 'Budget Planner', icon: 'Wallet' },
+  { label: 'Transactions', icon: 'ArrowLeftRight' },
+  { label: 'Savings Goals', icon: 'Target' },
+  { label: 'Debt Tracker', icon: 'CreditCard' },
+  { label: 'Bills & Subscriptions', icon: 'CalendarClock' },
   { label: 'Watchlist', icon: 'Star' },
   { label: 'News & Insights', icon: 'Newspaper' },
   { label: 'Markets', icon: 'ChartNoAxesCombined' },
