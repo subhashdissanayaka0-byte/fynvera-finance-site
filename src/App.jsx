@@ -1015,6 +1015,115 @@ function WorkspaceSidebar({ active, collapsed, onToggle, onNavigate, user, mobil
   );
 }
 
+
+const FINANCE_MANAGER_CONFIG = {
+  'Transactions': { table: 'finance_transactions', icon: 'ArrowLeftRight', title: 'Money transactions', description: 'Record income and spending so you can understand where your money goes.', fields: [{key:'title',label:'Description',required:true},{key:'amount',label:'Amount',type:'number',required:true},{key:'kind',label:'Type',type:'select',options:['expense','income']},{key:'category',label:'Category',type:'select',options:['Housing','Food','Transport','Utilities','Health','Shopping','Education','Salary','Business','Investment','Other']},{key:'occurred_on',label:'Date',type:'date',required:true},{key:'notes',label:'Notes',type:'textarea'}], columns:['title','kind','amount','category','occurred_on'] },
+  'Budget Planner': { table: 'finance_budgets', icon: 'Wallet', title: 'Monthly budget planner', description: 'Set a spending limit for each category and adjust it whenever your plans change.', fields: [{key:'category',label:'Budget category',required:true},{key:'monthly_limit',label:'Monthly limit',type:'number',required:true},{key:'budget_month',label:'Month',type:'month',required:true},{key:'notes',label:'Notes',type:'textarea'}], columns:['category','monthly_limit','budget_month'] },
+  'Savings Goals': { table: 'finance_goals', icon: 'Target', title: 'Savings goals', description: 'Create targets, update how much you have saved and track progress.', fields: [{key:'title',label:'Goal name',required:true},{key:'target_amount',label:'Target amount',type:'number',required:true},{key:'current_amount',label:'Amount saved',type:'number',required:true},{key:'target_date',label:'Target date',type:'date'},{key:'notes',label:'Notes',type:'textarea'}], columns:['title','current_amount','target_amount','target_date'] },
+  'Debt Tracker': { table: 'finance_debts', icon: 'CreditCard', title: 'Debt tracker', description: 'Keep a private record of balances, interest rates and minimum payments.', fields: [{key:'creditor',label:'Lender / debt name',required:true},{key:'balance',label:'Outstanding balance',type:'number',required:true},{key:'interest_rate',label:'Annual interest rate (%)',type:'number',required:true},{key:'minimum_payment',label:'Minimum payment',type:'number',required:true},{key:'due_date',label:'Next due date',type:'date'},{key:'notes',label:'Notes',type:'textarea'}], columns:['creditor','balance','interest_rate','minimum_payment','due_date'] },
+  'Bills & Subscriptions': { table: 'finance_bills', icon: 'CalendarClock', title: 'Bills & subscriptions', description: 'Track recurring bills, subscription costs and upcoming due dates.', fields: [{key:'name',label:'Bill / subscription',required:true},{key:'amount',label:'Amount',type:'number',required:true},{key:'frequency',label:'Frequency',type:'select',options:['weekly','monthly','quarterly','yearly']},{key:'next_due',label:'Next due date',type:'date'},{key:'category',label:'Category',type:'select',options:['Housing','Utilities','Internet & phone','Streaming','Insurance','Transport','Other']},{key:'active',label:'Active',type:'select',options:['true','false']},{key:'notes',label:'Notes',type:'textarea'}], columns:['name','amount','frequency','next_due','category','active'] }
+};
+
+function FinanceManagerWorkspace({ page, user, showToast, profile }) {
+  const config = FINANCE_MANAGER_CONFIG[page];
+  const localKey = \`fynvera-finance-\${user?.id || 'preview'}-\${config.table}\`;
+  const [rows, setRows] = useState(() => loadLocal(localKey, []));
+  const [draft, setDraft] = useState({});
+  const [editingId, setEditingId] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const currency = profile?.currency || 'USD';
+  const money = (value) => {
+    const amount = Number(value || 0);
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount); }
+    catch { return \`\${currency} \${amount.toFixed(2)}\`; }
+  };
+  useEffect(() => {
+    saveLocal(localKey, rows);
+  }, [localKey, rows]);
+  useEffect(() => {
+    let active = true;
+    if (!supabase || !user || user.demo) return () => { active = false; };
+    supabase.from(config.table).select('*').order('created_at', { ascending: false }).then(({data,error}) => {
+      if (!active) return;
+      if (error) { showToast(\`Could not load \${page.toLowerCase()}: \${error.message}\`, 'error'); return; }
+      setRows(data || []);
+    });
+    return () => { active = false; };
+  }, [config.table, page, user?.id]);
+  const resetForm = () => { setDraft({}); setEditingId(null); };
+  const startEdit = (row) => {
+    const values = {};
+    config.fields.forEach((field) => { values[field.key] = field.key === 'active' ? String(row[field.key] ?? true) : row[field.key] ?? ''; });
+    setDraft(values); setEditingId(row.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!user) { showToast('Please sign in to use your finance workspace.', 'error'); return; }
+    const payload = {};
+    config.fields.forEach((field) => {
+      let value = draft[field.key];
+      if (field.type === 'number') value = Number(value || 0);
+      if (field.key === 'active') value = value !== 'false';
+      if (typeof value === 'string' && field.key !== 'notes') value = value.trim();
+      if (value !== '' && value !== undefined) payload[field.key] = value;
+      else if (field.key === 'notes' || ['target_date','due_date','next_due'].includes(field.key)) payload[field.key] = null;
+    });
+    if (config.table === 'finance_budgets' && payload.budget_month) payload.budget_month = \`\${payload.budget_month}-01\`;
+    setBusy(true);
+    try {
+      if (supabase && !user.demo) {
+        const result = editingId
+          ? await supabase.from(config.table).update(payload).eq('id', editingId).select('*').single()
+          : await supabase.from(config.table).insert({ ...payload, user_id: user.id }).select('*').single();
+        if (result.error) throw result.error;
+        setRows((current) => editingId ? current.map((row) => row.id === editingId ? result.data : row) : [result.data, ...current]);
+      } else {
+        const localId = editingId || \`local-\${Date.now()}\`;
+        setRows((current) => editingId ? current.map((row) => row.id === editingId ? { ...row, ...payload, id: localId, updated_at: new Date().toISOString() } : row) : [{ ...payload, id: localId, created_at: new Date().toISOString() }, ...current]);
+      }
+      showToast(editingId ? 'Your changes have been saved.' : 'New item added to your workspace.', 'success');
+      resetForm();
+    } catch (error) {
+      showToast(error?.message || 'Could not save this item. Please try again.', 'error');
+    } finally { setBusy(false); }
+  };
+  const remove = async (row) => {
+    if (!window.confirm('Delete this item from your personal finance workspace?')) return;
+    if (supabase && user && !user.demo && !String(row.id).startsWith('local-')) {
+      const { error } = await supabase.from(config.table).delete().eq('id', row.id);
+      if (error) { showToast(error.message || 'Could not delete this item.', 'error'); return; }
+    }
+    setRows((current) => current.filter((item) => item.id !== row.id));
+    if (editingId === row.id) resetForm();
+    showToast('Item deleted.', 'success');
+  };
+  const total = rows.reduce((sum,row) => sum + Number(row.amount ?? row.balance ?? row.current_amount ?? row.monthly_limit ?? 0), 0);
+  const completed = config.table === 'finance_goals' ? rows.reduce((sum,row) => sum + (Number(row.target_amount) > 0 ? Math.min(100, Number(row.current_amount) / Number(row.target_amount) * 100) : 0), 0) : 0;
+  const formatValue = (row,key) => {
+    const value = row[key];
+    if (['amount','balance','current_amount','target_amount','monthly_limit','minimum_payment'].includes(key)) return money(value);
+    if (key === 'kind') return value === 'income' ? 'Income' : 'Expense';
+    if (key === 'active') return value ? 'Active' : 'Paused';
+    if (key === 'interest_rate') return \`\${Number(value || 0).toFixed(2)}%\`;
+    if (key === 'budget_month' && value) return new Date(\`\${String(value).slice(0,7)}-01T00:00:00\`).toLocaleDateString(undefined,{month:'short',year:'numeric'});
+    return value || '—';
+  };
+  return <div className="finance-manager-page">
+    <div className="workspace-welcome"><div><div className="eyebrow"><span/> PERSONAL FINANCE TOOLS</div><h1>{config.title}</h1><p>{config.description}</p></div><span className="data-pill"><Icon name="LockKeyhole" size={14}/> PRIVATE TO YOUR ACCOUNT</span></div>
+    <div className="finance-manager-summary"><div className="panel"><span>{page === 'Savings Goals' ? 'ACTIVE GOALS' : page === 'Debt Tracker' ? 'TOTAL BALANCE TRACKED' : page === 'Budget Planner' ? 'BUDGETS SET' : page === 'Transactions' ? 'TOTAL RECORDED' : 'RECURRING ITEMS'}</span><strong>{page === 'Savings Goals' ? rows.length : page === 'Debt Tracker' || page === 'Budget Planner' || page === 'Transactions' ? money(total) : rows.length}</strong><small>{page === 'Savings Goals' ? \`\${completed.toFixed(0)}% combined progress (illustrative)\` : 'Based on the entries you add'}</small></div><div className="panel"><span>RECORDS</span><strong>{rows.length}</strong><small>Saved in your private workspace</small></div><div className="panel"><span>DATA & PRIVACY</span><strong>{supabase && !user?.demo ? 'Synced' : 'This device'}</strong><small>{supabase && !user?.demo ? 'Protected by account-level access rules' : 'Sign in with a connected account to sync across devices'}</small></div></div>
+    <div className="finance-manager-layout">
+      <section className="panel finance-manager-form"><div className="panel-heading"><div><h3>{editingId ? 'Edit entry' : 'Add a new entry'}</h3><p>Change any field and save when ready.</p></div><span className="heading-icon"><Icon name={config.icon} size={19}/></span></div>
+        <form className="form-stack" onSubmit={submit}><div className="finance-manager-fields">{config.fields.map((field) => <label className={\`field-label \${field.type === 'textarea' ? 'finance-field-wide' : ''}\`} key={field.key}>{field.label}{field.type === 'select' ? <select className="select-field" value={draft[field.key] ?? (field.options?.[0] === 'true' ? 'true' : field.options?.[0] || '')} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))}>{field.options.map((option) => <option key={option} value={option}>{option === 'true' ? 'Yes' : option === 'false' ? 'No' : option.charAt(0).toUpperCase()+option.slice(1)}</option>)}</select> : field.type === 'textarea' ? <textarea className="plain-field" rows={3} value={draft[field.key] || ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} placeholder="Optional details"/> : <input className="plain-field" type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? '0.01' : undefined} value={draft[field.key] ?? ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} required={field.required}/>}</label>)}</div><div className="finance-manager-form-actions"><button className="button button-primary" type="submit" disabled={busy}><Icon name={busy ? 'LoaderCircle' : 'Save'} size={16}/>{busy ? 'Saving…' : editingId ? 'Save changes' : 'Add entry'}</button>{editingId && <button className="button button-outline" type="button" onClick={resetForm}>Cancel edit</button>}</div></form>
+      </section>
+      <section className="panel finance-manager-list"><div className="panel-heading"><div><h3>Your records</h3><p>Select edit to change an existing entry.</p></div><span className="heading-icon"><Icon name="ListChecks" size={19}/></span></div>
+        {rows.length ? <div className="finance-manager-records">{rows.map((row) => <article className="finance-manager-record" key={row.id}><div className="finance-record-main"><strong>{row.title || row.category || row.creditor || row.name || 'Finance entry'}</strong><div>{config.columns.filter((key) => !['title','category','creditor','name'].includes(key)).map((key) => <span key={key}>{key.replaceAll('_',' ')}: {formatValue(row,key)}</span>)}</div>{row.notes && <p>{row.notes}</p>}</div><div className="finance-record-actions"><button className="button button-soft button-small" onClick={() => startEdit(row)}><Icon name="Pencil" size={14}/> Edit</button><button className="icon-button" title="Delete entry" onClick={() => remove(row)}><Icon name="Trash2" size={16}/></button></div></article>)}</div> : <div className="empty-state"><Icon name={config.icon} size={28}/><strong>No entries yet</strong><span>Add your first record using the form. You can edit or delete it later.</span></div>}
+      </section>
+    </div>
+    <p className="finance-manager-disclaimer"><Icon name="ShieldCheck" size={14}/> Your entries are personal records, not connected to a bank or broker. Keep account passwords and card details out of notes.</p>
+  </div>;
+}
+
 function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, portfolio, profile, onProfileChange, onAvatarChange, onAddHolding, onRemoveHolding, onMarketWatchChange, onToggleWatch, onOpenArticle, onPublish, onEditArticle, onDeleteArticle, onCalculator, onAuth, onRegisterPasskey, passkeyBusy = false, onCategory, showToast, cryptoPrices = {}, cryptoStatus = 'connecting', marketQuotes = {}, marketCatalog = [], marketStatus = 'connecting', marketFetchedAt = null }) {
   const [holdingSymbol, setHoldingSymbol] = useState('VOO');
   const [holdingType, setHoldingType] = useState('ETF');
@@ -1039,6 +1148,7 @@ function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, po
         <div className="workspace-main-grid"><section className="panel workspace-table-panel"><div className="panel-heading"><div><h3>Your portfolio notes</h3><p>Manual entries · Not synced with a broker</p></div><button className="text-link text-link-small" onClick={() => onNavigateSafe('My Portfolio')}>View portfolio <Icon name="ArrowRight" size={14}/></button></div><PortfolioTable portfolio={portfolio.slice(0, 4)} onRemove={onRemoveHolding}/></section><section className="panel dashboard-side-panel"><div className="panel-heading"><div><h3>Keep moving forward</h3><p>Simple actions for your money journey</p></div><span className="heading-icon"><Icon name="Compass" size={19}/></span></div><div className="quick-action-list"><button onClick={() => onNavigateSafe('My Portfolio')}><span className="quick-action-icon"><Icon name="BriefcaseBusiness" size={17}/></span><span><strong>Review your portfolio notes</strong><small>Update values and goals</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onCalculator('compound')}><span className="quick-action-icon"><Icon name="Calculator" size={17}/></span><span><strong>Try a calculator</strong><small>Explore future scenarios</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onNavigateSafe('News & Insights')}><span className="quick-action-icon"><Icon name="BookOpenText" size={17}/></span><span><strong>Read your next insight</strong><small>Short, practical explainers</small></span><Icon name="ArrowUpRight" size={16}/></button></div></section></div>
         <section className="workspace-latest-section"><SectionTitle eyebrow="FRESH PERSPECTIVES" title="A few ideas worth your time" actionLabel="All insights" onAction={() => onNavigateSafe('News & Insights')}/><div className="workspace-article-grid">{latestItems.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div></section>
       </>}
+      {FINANCE_MANAGER_CONFIG[page] && <FinanceManagerWorkspace page={page} user={user} profile={profile} showToast={showToast}/>}
       {page === 'My Portfolio' && <><div className="workspace-welcome"><div><div className="eyebrow"><span/> YOUR TRACKER</div><h1>My Portfolio</h1><p>Keep a simple record of holdings, goals and the notes that matter to you.</p></div><button className="button button-primary" onClick={() => onCalculator('compound')}><Icon name="Calculator" size={16}/> Growth calculator</button></div><div className="portfolio-total-card"><div><span>MANUALLY TRACKED VALUE</span><strong>{formatMoney(portfolioValue)}</strong><small>Enter values yourself; no brokerage is connected.</small></div><div className="portfolio-chart-art"><svg viewBox="0 0 320 95"><path d="M0 80 C30 70 45 81 68 58 S100 67 128 45 S157 52 183 31 S220 38 241 20 S286 26 320 4" fill="none" stroke="#22d6e7" strokeWidth="3" strokeLinecap="round"/><path d="M0 80 C30 70 45 81 68 58 S100 67 128 45 S157 52 183 31 S220 38 241 20 S286 26 320 4 L320 95 L0 95 Z" fill="#22d6e7" opacity=".11"/></svg><small>Illustrative line, not performance history</small></div></div><div className="portfolio-work-grid"><section className="panel workspace-table-panel"><div className="panel-heading"><div><h3>Holdings & notes</h3><p>Update values when you review your finances.</p></div><span className="heading-icon"><Icon name="BriefcaseBusiness" size={19}/></span></div><PortfolioTable portfolio={portfolio} onRemove={onRemoveHolding}/></section><section className="panel holding-form-panel"><h3><Icon name="PlusCircle" size={19}/> Add a holding</h3><p>Record a stock, ETF, fund, savings goal or any asset for personal reference.</p><form className="form-stack" onSubmit={(event) => { event.preventDefault(); onAddHolding({ symbol: holdingSymbol.toUpperCase(), type: holdingType, value: Number(holdingAmount), cost: Number(holdingCost) }); setHoldingSymbol(''); showToast('Portfolio note added.', 'success'); }}><label className="field-label">Asset / symbol<input className="plain-field" value={holdingSymbol} onChange={(event) => setHoldingSymbol(event.target.value)} placeholder="e.g. VOO" required/></label><label className="field-label">Type<select className="select-field" value={holdingType} onChange={(event) => setHoldingType(event.target.value)}>{['Stock', 'ETF', 'Crypto', 'Fund', 'Savings', 'Property', 'Other'].map((item) => <option key={item}>{item}</option>)}</select></label><label className="field-label">Current value (USD)<input className="plain-field" type="number" min="0" step="0.01" value={holdingAmount} onChange={(event) => setHoldingAmount(event.target.value)} required/></label><label className="field-label">Your cost basis (USD)<input className="plain-field" type="number" min="0" step="0.01" value={holdingCost} onChange={(event) => setHoldingCost(event.target.value)} required/></label><button className="button button-primary button-block" type="submit"><Icon name="Plus" size={16}/> Add to my portfolio</button></form></section></div></>}
       {page === 'Author Profile' && <AuthorProfileWorkspace user={user} showToast={showToast} onAuth={onAuth} />}
       {page === 'Publish Article' && <PublishArticleWorkspace user={user} onPublish={onPublish} onDeleteArticle={onDeleteArticle} onOpenArticle={onOpenArticle} showToast={showToast} articles={articles} />}
