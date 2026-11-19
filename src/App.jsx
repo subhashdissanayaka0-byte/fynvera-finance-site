@@ -1207,7 +1207,9 @@ function getPortfolioLivePosition(item, cryptoPrices, cryptoStatus, marketQuotes
     if (quote && Number.isFinite(price) && price > 0 && !stale && quote.marketState !== 'closed') { livePrice = price; isLive = true; quoteStatus = quote.source || 'Live market feed'; }
     else quoteStatus = quote?.marketState === 'closed' ? 'Market closed · last quote not used' : marketStatus === 'connecting' ? 'Connecting to market feed' : 'Live quote unavailable';
   }
-  const currentValue = isLive ? livePrice * quantity : Number(item.value ?? item.current_value ?? 0) || 0;
+  const savedValue = Number(item.value ?? item.current_value ?? 0) || 0;
+  const currentValue = isLive ? livePrice * quantity : savedValue > 0 ? savedValue : investedValue;
+  if (!isLive && savedValue <= 0) quoteStatus = quoteStatus === 'Live quote unavailable' ? 'No live price · cost basis shown' : quoteStatus;
   return { ...item, type, quantity, buyPrice, fees, livePrice, isLive, quoteStatus, investedValue, currentValue };
 }
 
