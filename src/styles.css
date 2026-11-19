@@ -1772,3 +1772,111 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   .assistant-panel { right: -2px; bottom: 61px; width: calc(100vw - 24px); height: min(570px,calc(100dvh - 92px)); border-radius: 17px; }
 }
 @media (prefers-reduced-motion:reduce) { .assistant-launcher { transition: none; } }
+
+
+/* Homepage 15-coin market ticker: continuously scrolls on desktop and mobile. */
+.market-ticker {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 13px 14px;
+}
+.ticker-label {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 132px;
+  min-width: 132px;
+  flex-wrap: wrap;
+  line-height: 1.4;
+}
+.ticker-label small {
+  display: block;
+  width: 100%;
+  padding-left: 16px;
+  color: #28d9bd;
+  font-size: 8px;
+  letter-spacing: .12em;
+}
+.ticker-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 2%, #000 98%, transparent);
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: fynvera-ticker-scroll 78s linear infinite;
+  will-change: transform;
+}
+.ticker-group {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 22px;
+  padding-right: 22px;
+}
+.market-ticker:hover .ticker-track,
+.market-ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding-right: 17px;
+  border-right: 1px solid rgba(91, 166, 205, .17);
+}
+.ticker-symbol {
+  color: #a9d7eb;
+  font-size: 10px;
+  letter-spacing: .03em;
+}
+.ticker-item strong {
+  font-variant-numeric: tabular-nums;
+}
+.ticker-source {
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border: 1px solid rgba(115, 143, 173, .17);
+  border-radius: 5px;
+  color: #8199b3;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+@keyframes fynvera-ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (max-width: 700px) {
+  .market-ticker {
+    display: block;
+    padding: 11px 12px;
+  }
+  .ticker-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 8px;
+  }
+  .ticker-label small {
+    width: auto;
+    margin-left: auto;
+    padding-left: 0;
+  }
+  .ticker-viewport { width: 100%; }
+  .ticker-group { gap: 16px; padding-right: 16px; }
+  .ticker-item { gap: 6px; padding-right: 12px; }
+  .ticker-source { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  .ticker-viewport { overflow-x: auto; }
+}
