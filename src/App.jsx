@@ -1798,7 +1798,7 @@ export default function App() {
     if (!supabase || !currentUser || currentUser.demo) return undefined;
     let isMounted = true;
     Promise.all([
-      supabase.from('portfolio_holdings').select('id,symbol,asset_type,current_value,cost_basis,notes').order('created_at', { ascending: false }),
+      supabase.from('portfolio_holdings').select('id,symbol,asset_type,current_value,cost_basis,quantity,buy_price,purchase_date,fees,quote_symbol,quote_currency,notes').order('created_at', { ascending: false }),
       supabase.from('article_bookmarks').select('article_id').order('created_at', { ascending: false }),
       supabase.from('user_financial_profiles').select('primary_goal,risk_level,monthly_savings_target,notes').eq('user_id', currentUser.id).maybeSingle(),
       supabase.from('profiles').select('full_name,country,currency,experience,goal,risk_level,monthly_target,notes,avatar_url').eq('id', currentUser.id).maybeSingle(),
