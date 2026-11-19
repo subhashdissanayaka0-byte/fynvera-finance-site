@@ -98,7 +98,12 @@ const BINANCE_COINS = [
   { symbol: 'DOGE', name: 'Dogecoin', color: '#d8c46a' },
   { symbol: 'LINK', name: 'Chainlink', color: '#6b9cff' },
   { symbol: 'TRX', name: 'TRON', color: '#f46e7b' },
-  { symbol: 'AVAX', name: 'Avalanche', color: '#f08080' }
+  { symbol: 'AVAX', name: 'Avalanche', color: '#f08080' },
+  { symbol: 'DOT', name: 'Polkadot', color: '#e879a8' },
+  { symbol: 'LTC', name: 'Litecoin', color: '#b7c8d8' },
+  { symbol: 'BCH', name: 'Bitcoin Cash', color: '#8bcf8b' },
+  { symbol: 'TON', name: 'Toncoin', color: '#79aaff' },
+  { symbol: 'SUI', name: 'Sui', color: '#6fd4ef' }
 ];
 
 // Live non-crypto symbols from biquote's public, keyless quote endpoint.
@@ -356,6 +361,19 @@ function FynveraAssistant({ activeView, workspaceOpen, workspacePage, articleTit
       if (/watchlist|watch list|save.*market|add.*market/.test(q)) return { text: 'The market watchlist lets you keep an eye on symbols you choose. Open your Workspace, then choose Watchlist or Markets. You need to sign in to use your personal workspace.', actionLabel: 'Open my workspace', actionType: 'workspace', actionValue: 'Dashboard' };
       return { text: 'Use the Markets area in your Workspace to browse supported market groups, or choose Crypto, Forex, Stock Market and Commodities from the main navigation. Market quotes can be delayed or unavailable when a provider or market is offline. They are informational, not trading instructions.', actionLabel: 'Explore market categories', actionType: 'category', actionValue: 'Stock Market' };
     }
+    if (/what is (a )?(stock|share)|how do stocks work|equity/.test(q)) return { text: 'A stock (or share) represents a small ownership interest in a company. Its market price can rise or fall as expectations, company results, interest rates and wider market conditions change. Shareholders may receive dividends, but these are not guaranteed. Learn about diversification and fees before investing.' };
+    if (/what is (an )?etf|index fund|exchange.traded fund/.test(q)) return { text: 'An ETF (exchange-traded fund) is a fund whose shares trade on an exchange. Many ETFs hold a basket of assets, such as shares or bonds, which can provide diversification in one product. Check its index, holdings, expense ratio, tracking difference, liquidity and risks; an ETF can still lose value.' };
+    if (/diversif|asset allocat/.test(q)) return { text: 'Diversification means spreading money across different assets, sectors, regions or issuers instead of relying on one holding. Asset allocation is how a portfolio is divided among asset classes. These approaches can reduce concentration risk, but they do not prevent losses. The right mix depends on goals, time horizon and risk capacity.' };
+    if (/compound interest|compounding/.test(q)) return { text: 'Compound growth means returns can earn further returns over time. For example, interest added to a balance may itself earn interest in later periods. The result depends on the starting amount, contribution schedule, rate, fees, taxes and time. Actual investment returns vary and are not guaranteed.', actionLabel: 'Open Compound Interest Calculator', actionType: 'calculator', actionValue: 'compound' };
+    if (/dollar.cost average|dca|regular invest/.test(q)) return { text: 'Dollar-cost averaging means investing a fixed amount at regular intervals, regardless of short-term price moves. It can reduce the pressure to choose one entry date, but it does not guarantee a profit or protect against falling markets. Fees and the opportunity cost of holding cash still matter.' };
+    if (/inflation|purchasing power/.test(q)) return { text: 'Inflation is a broad rise in prices over time, which reduces the amount goods and services a unit of money can buy. When comparing returns, consider the return after inflation, fees and taxes. A positive nominal return can still mean a loss of purchasing power.' };
+    if (/bond|treasury|fixed income/.test(q)) return { text: 'A bond is a loan made by an investor to a government or company. Bonds may pay interest and return principal at maturity, but payments are not risk-free. Key risks include issuer default, interest-rate changes, inflation and currency movements. Bond prices generally move opposite to market interest rates.' };
+    if (/forex|currency pair|exchange rate/.test(q)) return { text: 'Forex is the market for exchanging currencies. A pair such as EUR/USD shows how many US dollars one euro is worth. Exchange rates respond to interest rates, economic data, central-bank decisions and geopolitical events. Leveraged forex trading can magnify losses as well as gains.' };
+    if (/crypto|blockchain|bitcoin|altcoin|stablecoin/.test(q)) return { text: 'Cryptocurrencies are digital assets that use cryptographic networks; many use blockchains to record transactions. Prices can be extremely volatile, and risks include custody loss, scams, protocol failures, regulation and liquidity. Stablecoins aim to track another asset but can lose their peg. Only use platforms you have independently checked.' };
+    if (/market snapshot|ticker|live price|price change|24.hour/.test(q)) return { text: 'The homepage Market Snapshot follows 15 major Binance Spot USDT pairs and displays the latest price plus the 24-hour percentage move. The public feed needs no API key. “LIVE” means the stream is connected; “SNAPSHOT” means the latest REST quote loaded while the live stream reconnects. Prices can change quickly.' };
+    if (/market order|limit order|stop.loss|stop loss/.test(q)) return { text: 'A market order aims to execute immediately at the best available price, but the final fill can differ from the quote. A limit order sets the worst price you are willing to accept, but may not execute. Stop orders can help define an exit trigger, but gaps and slippage mean the execution price is not guaranteed.' };
+    if (/scam|phishing|guaranteed return|double.*money|giveaway/.test(q)) return { text: 'Be cautious of guaranteed-profit claims, pressure to act quickly, unsolicited investment messages, fake support accounts and requests for seed phrases or one-time passwords. Verify a firm through its official regulator register, never share wallet recovery phrases, and do not send funds to “unlock” supposed profits.' };
+    if (/risk tolerance|risk capacity|volatil/.test(q)) return { text: 'Risk tolerance is how comfortable you feel with uncertainty and losses; risk capacity is how much loss your finances can withstand. They are different. Consider emergency savings, debt, income stability, time horizon and whether you may need the money soon. Higher potential returns usually come with higher risk.' };
     if (/article|news|read|insight/.test(q)) return { text: 'Choose News & Insights for editorial articles, or open a category such as Investing, Crypto, Forex or Personal Finance. Select an article card to read the full article. You can use the bookmark icon to save an article after signing in.', actionLabel: 'Browse News & Insights', actionType: 'category', actionValue: 'News & Insights' };
     if (/bookmark|save article|reading list/.test(q)) return { text: 'To save an article, open it and select the bookmark/save icon. Sign in first so your reading list can be associated with your account. You can find saved items in your Workspace.', actionLabel: 'Open my workspace', actionType: 'workspace', actionValue: 'Dashboard' };
     if (/login|log in|sign in|sign up|register|account|passkey|password|forgot/.test(q)) return { text: 'Use Sign In or Sign Up in the website header. FYNVERA supports email and password, password recovery, and passkey sign-in where enabled on your device. Your private Workspace requires a signed-in account.', actionLabel: 'Sign in / create account', actionType: 'auth', actionValue: 'signin' };
@@ -610,15 +628,13 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
   // Apply the filter to the feature story as well as the smaller cards, so categories never mix.
   const filteredEditorial = newsFilter === 'All' ? editorialArticles : editorialArticles.filter((article) => article.category === newsFilter);
   const feature = filteredEditorial[0] || null;
-  const snapshotInstruments = [
-    { symbol: 'SPX', name: 'S&P 500', quoteSymbol: 'US500', assetClass: 'index', color: '#5d91ff' },
-    { symbol: 'NDX', name: 'NASDAQ 100', quoteSymbol: 'USTEC', assetClass: 'index', color: '#9e8cff' },
-    { symbol: 'GOLD', name: 'Gold', quoteSymbol: 'XAUUSD', assetClass: 'commodity', color: '#ffc44d' }
-  ];
-  const snapshotRows = [
-    ...snapshotInstruments.map((item) => ({ ...liveMarketRow(item, marketQuotes, marketStatus), tickerName: item.name, currency: item.assetClass === 'commodity' ? '$' : '' })),
-    ...BINANCE_COINS.slice(0, 2).map((coin) => ({ ...cryptoTickerRow(coin, cryptoPrices, cryptoStatus), tickerName: coin.name, currency: '' }))
-  ];
+  // The homepage snapshot highlights 15 major Binance USDT spot pairs.
+  // Prices and 24-hour changes come from the same public ticker feed as Market Overview.
+  const snapshotRows = BINANCE_COINS.map((coin) => ({
+    ...cryptoTickerRow(coin, cryptoPrices, cryptoStatus),
+    tickerName: coin.symbol,
+    currency: ''
+  }));
   const newsItems = filteredEditorial.slice(0, 4);
   return (
     <main className="page-wrap home-page">
@@ -638,7 +654,21 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
         </section>
       </div>
 
-      <div className="market-ticker"><div className="ticker-label"><span className={`live-dot ${cryptoStatus === 'live' && marketStatus === 'live' ? '' : 'live-dot-muted'}`} /> MARKET SNAPSHOT</div><div className="ticker-items">{snapshotRows.map((item) => <div key={item.symbol} className="ticker-item"><span>{item.tickerName || item.name}{item.isLive ? ' · LIVE' : item.marketState === 'closed' ? ' · MARKET CLOSED' : item.stale ? ' · LAST QUOTE' : item.isSnapshot ? ' · SNAPSHOT' : ' · CONNECTING'}</span><strong>{item.value === 'Loading…' || item.value === 'No quote' || item.value === 'Unavailable' ? item.value : `${item.currency || ''}${item.value}`}</strong><em className={item.positive ? 'positive' : 'negative'}>{item.change || '—'}</em></div>)}</div><span className="ticker-demo">BINANCE CRYPTO · BIQUOTE FX / METALS / INDEX / STOCK CFDs</span></div>
+      <section className="market-ticker" aria-label="Live cryptocurrency market snapshot">
+        <div className="ticker-label"><span className={`live-dot ${cryptoStatus === 'live' ? '' : 'live-dot-muted'}`} /> <span>MARKET SNAPSHOT</span><small>{cryptoStatus === 'live' ? 'LIVE' : cryptoStatus === 'snapshot' ? 'SNAPSHOT' : 'CONNECTING'}</small></div>
+        <div className="ticker-viewport">
+          <div className="ticker-track">
+            {[0, 1].map((copy) => <div className="ticker-group" key={copy} aria-hidden={copy === 1 ? 'true' : undefined}>
+              {snapshotRows.map((item) => <div key={item.symbol} className="ticker-item">
+                <b className="ticker-symbol">{item.symbol}</b>
+                <strong>{item.value === 'Loading…' || item.value === 'No quote' || item.value === 'Unavailable' ? item.value : `${item.currency || ''}${item.value}`}</strong>
+                <em className={item.positive ? 'positive' : 'negative'}>{item.change || '—'}</em>
+              </div>)}
+            </div>)}
+          </div>
+        </div>
+        <span className="ticker-source">BINANCE SPOT · 24H</span>
+      </section>
       <AdSlot id="ADSLOT-HOME-001" format="wide"/>
 
       <section className="home-feature-section section-gap">
