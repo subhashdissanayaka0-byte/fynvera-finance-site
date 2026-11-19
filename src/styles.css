@@ -1736,10 +1736,10 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 
 /* Floating FYNVERA Guide assistant — lightweight, no API key required. */
 .fynvera-assistant { position: fixed; z-index: 120; right: 24px; bottom: 22px; font-family: inherit; }
-.assistant-launcher { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding: 0 19px; border: 1px solid rgba(104,236,255,.55); border-radius: 999px; color: #001521; background: linear-gradient(115deg,#55edfa,#20c5e0); box-shadow: 0 12px 36px rgba(0,194,219,.27),0 3px 10px rgba(0,0,0,.22); font-size: 13px; font-weight: 800; transition: transform .2s ease,box-shadow .2s ease; }
+.assistant-launcher { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 47px; padding: 0 15px; border: 1px solid rgba(104,236,255,.55); border-radius: 999px; color: #001521; background: linear-gradient(115deg,#55edfa,#20c5e0); box-shadow: 0 12px 36px rgba(0,194,219,.27),0 3px 10px rgba(0,0,0,.22); font-size: 12px; font-weight: 800; transition: transform .2s ease,box-shadow .2s ease; }
 .assistant-launcher:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,194,219,.34); }
 .assistant-launcher i { width: 7px; height: 7px; border-radius: 50%; background: #087f69; box-shadow: 0 0 0 4px rgba(8,127,105,.13); }
-.assistant-launcher-open { width: 52px; min-height: 52px; padding: 0; color: #eafaff; background: #0a2741; border-color: rgba(104,236,255,.35); }
+.assistant-launcher-open { width: 46px; min-height: 46px; padding: 0; color: #eafaff; background: #0a2741; border-color: rgba(104,236,255,.35); }
 .assistant-panel { position: absolute; right: 0; bottom: 68px; display: flex; flex-direction: column; width: min(380px,calc(100vw - 32px)); height: min(570px,calc(100dvh - 112px)); overflow: hidden; border: 1px solid rgba(91,192,226,.3); border-radius: 20px; background: #06182b; box-shadow: 0 24px 75px rgba(0,0,0,.48),0 0 35px rgba(22,193,222,.08); }
 .assistant-header { display: flex; align-items: center; gap: 11px; padding: 16px; border-bottom: 1px solid rgba(91,192,226,.17); background: linear-gradient(115deg,rgba(17,65,91,.7),rgba(7,27,49,.9)); }
 .assistant-avatar { display: grid; place-items: center; width: 39px; height: 39px; flex: 0 0 auto; border: 1px solid rgba(78,228,246,.3); border-radius: 13px; color: #6beeff; background: rgba(32,210,230,.1); }
@@ -2000,3 +2000,6 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   .finance-manager-record { flex-direction:column; }
   .finance-record-actions { width:100%; justify-content:flex-end; }
 }
+
+/* Slightly smaller assistant launcher on compact screens too. */
+@media (max-width: 700px) { .fynvera-assistant { right: 15px; bottom: 15px; } .assistant-launcher { min-height: 44px; padding: 0 13px; } .assistant-launcher-open { width: 44px; min-height: 44px; } }
