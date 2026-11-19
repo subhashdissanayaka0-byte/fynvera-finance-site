@@ -1026,7 +1026,7 @@ const FINANCE_MANAGER_CONFIG = {
 
 function FinanceManagerWorkspace({ page, user, showToast, profile }) {
   const config = FINANCE_MANAGER_CONFIG[page];
-  const localKey = \`fynvera-finance-\${user?.id || 'preview'}-\${config.table}\`;
+  const localKey = `fynvera-finance-${user?.id || 'preview'}-${config.table}`;
   const makeDefaultDraft = () => Object.fromEntries(config.fields.map((field) => [field.key, field.key === 'occurred_on' ? new Date().toISOString().slice(0,10) : field.key === 'budget_month' ? new Date().toISOString().slice(0,7) : field.key === 'active' ? 'true' : '']));
   const [rows, setRows] = useState(() => loadLocal(localKey, []));
   const [draft, setDraft] = useState(makeDefaultDraft);
@@ -1036,7 +1036,7 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
   const money = (value) => {
     const amount = Number(value || 0);
     try { return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount); }
-    catch { return \`\${currency} \${amount.toFixed(2)}\`; }
+    catch { return `${currency} ${amount.toFixed(2)}`; }
   };
   useEffect(() => {
     saveLocal(localKey, rows);
@@ -1046,7 +1046,7 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
     if (!supabase || !user || user.demo) return () => { active = false; };
     supabase.from(config.table).select('*').order('created_at', { ascending: false }).then(({data,error}) => {
       if (!active) return;
-      if (error) { showToast(\`Could not load \${page.toLowerCase()}: \${error.message}\`, 'error'); return; }
+      if (error) { showToast(`Could not load ${page.toLowerCase()}: ${error.message}`, 'error'); return; }
       setRows(data || []);
     });
     return () => { active = false; };
@@ -1070,7 +1070,7 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
       if (value !== '' && value !== undefined) payload[field.key] = value;
       else if (field.key === 'notes' || ['target_date','due_date','next_due'].includes(field.key)) payload[field.key] = null;
     });
-    if (config.table === 'finance_budgets' && payload.budget_month) payload.budget_month = \`\${payload.budget_month}-01\`;
+    if (config.table === 'finance_budgets' && payload.budget_month) payload.budget_month = `${payload.budget_month}-01`;
     setBusy(true);
     try {
       if (supabase && !user.demo) {
@@ -1080,7 +1080,7 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
         if (result.error) throw result.error;
         setRows((current) => editingId ? current.map((row) => row.id === editingId ? result.data : row) : [result.data, ...current]);
       } else {
-        const localId = editingId || \`local-\${Date.now()}\`;
+        const localId = editingId || `local-${Date.now()}`;
         setRows((current) => editingId ? current.map((row) => row.id === editingId ? { ...row, ...payload, id: localId, updated_at: new Date().toISOString() } : row) : [{ ...payload, id: localId, created_at: new Date().toISOString() }, ...current]);
       }
       showToast(editingId ? 'Your changes have been saved.' : 'New item added to your workspace.', 'success');
@@ -1106,16 +1106,16 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
     if (['amount','balance','current_amount','target_amount','monthly_limit','minimum_payment'].includes(key)) return money(value);
     if (key === 'kind') return value === 'income' ? 'Income' : 'Expense';
     if (key === 'active') return value ? 'Active' : 'Paused';
-    if (key === 'interest_rate') return \`\${Number(value || 0).toFixed(2)}%\`;
-    if (key === 'budget_month' && value) return new Date(\`\${String(value).slice(0,7)}-01T00:00:00\`).toLocaleDateString(undefined,{month:'short',year:'numeric'});
+    if (key === 'interest_rate') return `${Number(value || 0).toFixed(2)}%`;
+    if (key === 'budget_month' && value) return new Date(`${String(value).slice(0,7)}-01T00:00:00`).toLocaleDateString(undefined,{month:'short',year:'numeric'});
     return value || '—';
   };
   return <div className="finance-manager-page">
     <div className="workspace-welcome"><div><div className="eyebrow"><span/> PERSONAL FINANCE TOOLS</div><h1>{config.title}</h1><p>{config.description}</p></div><span className="data-pill"><Icon name="LockKeyhole" size={14}/> PRIVATE TO YOUR ACCOUNT</span></div>
-    <div className="finance-manager-summary"><div className="panel"><span>{page === 'Savings Goals' ? 'ACTIVE GOALS' : page === 'Debt Tracker' ? 'TOTAL BALANCE TRACKED' : page === 'Budget Planner' ? 'BUDGETS SET' : page === 'Transactions' ? 'TOTAL RECORDED' : 'RECURRING ITEMS'}</span><strong>{page === 'Savings Goals' ? rows.length : page === 'Debt Tracker' || page === 'Budget Planner' || page === 'Transactions' ? money(total) : rows.length}</strong><small>{page === 'Savings Goals' ? \`\${completed.toFixed(0)}% combined progress (illustrative)\` : 'Based on the entries you add'}</small></div><div className="panel"><span>RECORDS</span><strong>{rows.length}</strong><small>Saved in your private workspace</small></div><div className="panel"><span>DATA & PRIVACY</span><strong>{supabase && !user?.demo ? 'Synced' : 'This device'}</strong><small>{supabase && !user?.demo ? 'Protected by account-level access rules' : 'Sign in with a connected account to sync across devices'}</small></div></div>
+    <div className="finance-manager-summary"><div className="panel"><span>{page === 'Savings Goals' ? 'ACTIVE GOALS' : page === 'Debt Tracker' ? 'TOTAL BALANCE TRACKED' : page === 'Budget Planner' ? 'BUDGETS SET' : page === 'Transactions' ? 'TOTAL RECORDED' : 'RECURRING ITEMS'}</span><strong>{page === 'Savings Goals' ? rows.length : page === 'Debt Tracker' || page === 'Budget Planner' || page === 'Transactions' ? money(total) : rows.length}</strong><small>{page === 'Savings Goals' ? `${completed.toFixed(0)}% combined progress (illustrative)` : 'Based on the entries you add'}</small></div><div className="panel"><span>RECORDS</span><strong>{rows.length}</strong><small>Saved in your private workspace</small></div><div className="panel"><span>DATA & PRIVACY</span><strong>{supabase && !user?.demo ? 'Synced' : 'This device'}</strong><small>{supabase && !user?.demo ? 'Protected by account-level access rules' : 'Sign in with a connected account to sync across devices'}</small></div></div>
     <div className="finance-manager-layout">
       <section className="panel finance-manager-form"><div className="panel-heading"><div><h3>{editingId ? 'Edit entry' : 'Add a new entry'}</h3><p>Change any field and save when ready.</p></div><span className="heading-icon"><Icon name={config.icon} size={19}/></span></div>
-        <form className="form-stack" onSubmit={submit}><div className="finance-manager-fields">{config.fields.map((field) => <label className={\`field-label \${field.type === 'textarea' ? 'finance-field-wide' : ''}\`} key={field.key}>{field.label}{field.type === 'select' ? <select className="select-field" value={draft[field.key] ?? (field.options?.[0] === 'true' ? 'true' : field.options?.[0] || '')} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))}>{field.options.map((option) => <option key={option} value={option}>{option === 'true' ? 'Yes' : option === 'false' ? 'No' : option.charAt(0).toUpperCase()+option.slice(1)}</option>)}</select> : field.type === 'textarea' ? <textarea className="plain-field" rows={3} value={draft[field.key] || ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} placeholder="Optional details"/> : <input className="plain-field" type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? '0.01' : undefined} value={draft[field.key] ?? ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} required={field.required}/>}</label>)}</div><div className="finance-manager-form-actions"><button className="button button-primary" type="submit" disabled={busy}><Icon name={busy ? 'LoaderCircle' : 'Save'} size={16}/>{busy ? 'Saving…' : editingId ? 'Save changes' : 'Add entry'}</button>{editingId && <button className="button button-outline" type="button" onClick={resetForm}>Cancel edit</button>}</div></form>
+        <form className="form-stack" onSubmit={submit}><div className="finance-manager-fields">{config.fields.map((field) => <label className={`field-label ${field.type === 'textarea' ? 'finance-field-wide' : ''}`} key={field.key}>{field.label}{field.type === 'select' ? <select className="select-field" value={draft[field.key] ?? (field.options?.[0] === 'true' ? 'true' : field.options?.[0] || '')} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))}>{field.options.map((option) => <option key={option} value={option}>{option === 'true' ? 'Yes' : option === 'false' ? 'No' : option.charAt(0).toUpperCase()+option.slice(1)}</option>)}</select> : field.type === 'textarea' ? <textarea className="plain-field" rows={3} value={draft[field.key] || ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} placeholder="Optional details"/> : <input className="plain-field" type={field.type || 'text'} min={field.type === 'number' ? 0 : undefined} step={field.type === 'number' ? '0.01' : undefined} value={draft[field.key] ?? ''} onChange={(event) => setDraft((current) => ({...current,[field.key]:event.target.value}))} required={field.required}/>}</label>)}</div><div className="finance-manager-form-actions"><button className="button button-primary" type="submit" disabled={busy}><Icon name={busy ? 'LoaderCircle' : 'Save'} size={16}/>{busy ? 'Saving…' : editingId ? 'Save changes' : 'Add entry'}</button>{editingId && <button className="button button-outline" type="button" onClick={resetForm}>Cancel edit</button>}</div></form>
       </section>
       <section className="panel finance-manager-list"><div className="panel-heading"><div><h3>Your records</h3><p>Select edit to change an existing entry.</p></div><span className="heading-icon"><Icon name="ListChecks" size={19}/></span></div>
         {rows.length ? <div className="finance-manager-records">{rows.map((row) => <article className="finance-manager-record" key={row.id}><div className="finance-record-main"><strong>{row.title || row.category || row.creditor || row.name || 'Finance entry'}</strong><div>{config.columns.filter((key) => !['title','category','creditor','name'].includes(key)).map((key) => <span key={key}>{key.replaceAll('_',' ')}: {formatValue(row,key)}</span>)}</div>{row.notes && <p>{row.notes}</p>}</div><div className="finance-record-actions"><button className="button button-soft button-small" onClick={() => startEdit(row)}><Icon name="Pencil" size={14}/> Edit</button><button className="icon-button" title="Delete entry" onClick={() => remove(row)}><Icon name="Trash2" size={16}/></button></div></article>)}</div> : <div className="empty-state"><Icon name={config.icon} size={28}/><strong>No entries yet</strong><span>Add your first record using the form. You can edit or delete it later.</span></div>}
