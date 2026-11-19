@@ -37,4 +37,10 @@ with check (
 -- table references, and returns aggregate counts only for published articles.
 grant execute on function public.article_reaction_counts(uuid) to anon, authenticated;
 
+-- Enforce the same image-only, 5 MB upload limits on the server.
+update storage.buckets
+set file_size_limit = 5242880,
+    allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp']::text[]
+where name in ('avatars', 'article-images');
+
 commit;
