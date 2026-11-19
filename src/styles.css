@@ -1922,3 +1922,48 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   .avatar-crop-small-preview { width:62px; height:62px; }
   .avatar-crop-footer .button { flex:1 1 auto; justify-content:center; }
 }
+
+
+/* Mobile article author card: let the bio and every social link use the full card width. */
+.author-panel {
+  min-width: 0;
+}
+.author-panel > div:nth-child(2) {
+  min-width: 0;
+}
+.author-panel h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.author-panel .public-author-info {
+  grid-column: 1 / -1;
+  min-width: 0;
+  width: 100%;
+}
+.author-panel .public-author-info > p {
+  overflow-wrap: anywhere;
+}
+.author-panel .public-author-links {
+  width: 100%;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+@media (max-width: 700px) {
+  .article-aside > .author-panel,
+  .article-aside > .article-aside-tags {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
+  .author-panel {
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: 16px;
+  }
+  .author-panel .public-author-info {
+    display: block;
+  }
+  .author-panel .public-author-links a {
+    max-width: 100%;
+  }
+}
