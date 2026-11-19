@@ -607,7 +607,7 @@ function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, on
           <span className="category-label">{article.category.toUpperCase()}</span>
           <h1>{article.title}</h1>
           <p className="article-lead">{article.excerpt}</p>
-          <div className="article-byline"><div className="author-avatar">{(article.author || 'F').slice(0, 1)}</div><div><strong>{article.author || 'Fynvera Editorial'}</strong><small>{article.authorRole || 'Finance Contributor'}{articleWasEdited(article) ? ' · EDITED' : ''}</small></div><span className="byline-separator" /><span><Icon name="CalendarDays" size={15} />{formatDate(article.date)}</span><span><Icon name="Clock3" size={15} />{article.readTime || 5} min read</span></div>
+          <div className="article-byline"><div className="author-avatar">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><strong>{article.author || 'Fynvera Editorial'}</strong><small>{article.authorRole || 'Finance Contributor'}{articleWasEdited(article) ? ' · EDITED' : ''}</small></div><span className="byline-separator" /><span><Icon name="CalendarDays" size={15} />{formatDate(article.date)}</span><span><Icon name="Clock3" size={15} />{article.readTime || 5} min read</span></div>
           {article.authorId && <div className="article-top-follow"><FollowAuthorButton targetId={article.authorId} user={user} authorName={article.author} onAuth={onAuth} showToast={showToast}/></div>}
           <div className="article-detail-image"><ImageSlot id={article.imageId || 'IMG-ARTICLE-CUSTOM'} src={article.image} alt={article.title} /></div>
           <div className="article-toolbar"><span><Icon name="BookOpenText" size={16} /> Reading guide</span><div><button className={`button button-soft button-small ${watched ? 'button-soft-active' : ''}`} onClick={() => onToggleWatch(article)}><Icon name={watched ? 'BookmarkCheck' : 'Bookmark'} size={15} />{watched ? 'Saved' : 'Save article'}</button><button className="button button-soft button-small" onClick={() => onShare(article)}><Icon name="Share2" size={15} />Share</button></div></div>
@@ -615,7 +615,7 @@ function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, on
           <div className="keyword-tags">{(article.keywords || []).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>#{keyword.replaceAll(' ', '')}</button>)}</div>
           <ArticleCommunity article={article} user={user} onAuth={onAuth} showToast={showToast}/>
         </article>
-        <aside className="article-aside"><MarketPanel compact cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{(article.author || 'F').slice(0, 1)}</div><div><h3>{article.author || 'Fynvera Editorial'}</h3><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p>{article.authorId && <PublicAuthorLinks authorId={article.authorId}/>}<button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
+        <aside className="article-aside"><MarketPanel compact cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><h3>{article.author || 'Fynvera Editorial'}</h3><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p>{article.authorId && <PublicAuthorLinks authorId={article.authorId}/>}<button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
       </div>
     </main>
   );
@@ -1100,7 +1100,7 @@ function AuthorProfileWorkspace({ user, showToast, onAuth }) {
     const username = draft.username.trim().replace(/^@/, '').toLowerCase();
     if (!/^[a-z0-9_]{3,24}$/.test(username)) { showToast('Username must be 3–24 characters using letters, numbers or underscores.', 'error'); return; }
     setSaving(true);
-    const { error } = await supabase.from('author_profiles').upsert({ user_id: user.id, username, display_name: draft.display_name.trim() || user.name || username, bio: draft.bio.trim(), x_url: draft.x_url.trim() || null, tiktok_url: draft.tiktok_url.trim() || null, facebook_url: draft.facebook_url.trim() || null, telegram_url: draft.telegram_url.trim() || null }, { onConflict: 'user_id' });
+    const { error } = await supabase.from('author_profiles').upsert({ user_id: user.id, username, display_name: draft.display_name.trim() || user.name || username, avatar_url: user.avatar || null, bio: draft.bio.trim(), x_url: draft.x_url.trim() || null, tiktok_url: draft.tiktok_url.trim() || null, facebook_url: draft.facebook_url.trim() || null, telegram_url: draft.telegram_url.trim() || null }, { onConflict: 'user_id' });
     setSaving(false);
     if (error) { showToast(error.message.includes('author_profiles') ? 'Run supabase/fynvera_upgrade_migration.sql in Supabase SQL Editor first.' : error.message, 'error'); return; }
     setDraft((current) => ({ ...current, username }));
@@ -1619,14 +1619,14 @@ export default function App() {
       const authorIds = [...new Set(data.map((row) => row.user_id).filter(Boolean))];
       let authorProfiles = [];
       if (authorIds.length) {
-        const profileResult = await supabase.from('author_profiles').select('user_id,display_name,username').in('user_id', authorIds);
+        const profileResult = await supabase.from('author_profiles').select('user_id,display_name,username,avatar_url').in('user_id', authorIds);
         authorProfiles = profileResult.data || [];
       }
       const profileById = Object.fromEntries(authorProfiles.map((profile) => [profile.user_id, profile]));
       const databaseArticles = data.map((row) => {
         const article = mapDatabaseArticle(row, currentUser);
         const author = profileById[row.user_id];
-        return { ...article, author: author?.display_name || author?.username || article.author };
+        return { ...article, author: author?.display_name || author?.username || article.author, authorAvatar: author?.avatar_url || '' };
       });
       setArticles((current) => [...databaseArticles, ...current.filter((article) => String(article.id).startsWith('seed-') || String(article.id).startsWith('demo-'))]);
     }).catch((error) => console.warn('Published articles could not be loaded; showing the starter library.', error));
@@ -1974,8 +1974,11 @@ export default function App() {
       const { data } = supabase.storage.from('avatars').getPublicUrl(path); const avatar = `${data.publicUrl}?v=${Date.now()}`;
       const { error: authError } = await supabase.auth.updateUser({ data: { avatar_url: avatar } });
       const { error: profileError } = await supabase.from('profiles').upsert({ id: currentUser.id, avatar_url: avatar }, { onConflict: 'id' });
-      if (authError || profileError) { showToast('Image uploaded, but profile update needs a permissions check.', 'error'); return; }
-      setCurrentUser((current) => ({ ...current, avatar })); showToast('Profile picture updated.', 'success'); return;
+      const { error: authorError } = await supabase.from('author_profiles').upsert({ user_id: currentUser.id, avatar_url: avatar, display_name: currentUser.name || null }, { onConflict: 'user_id' });
+      if (authError || profileError || authorError) { showToast('Image uploaded, but public author picture could not be synced. Check author profile permissions.', 'error'); return; }
+      setCurrentUser((current) => ({ ...current, avatar }));
+      setArticles((current) => current.map((article) => article.authorId === currentUser.id ? { ...article, authorAvatar: avatar } : article));
+      showToast('Profile picture updated and synced to your articles.', 'success'); return;
     }
     const avatar = await readFileAsDataURL(file); setCurrentUser((current) => ({ ...current, avatar })); saveLocal('demoUser', { ...currentUser, avatar }); showToast('Profile picture updated in preview mode.', 'success');
   }
