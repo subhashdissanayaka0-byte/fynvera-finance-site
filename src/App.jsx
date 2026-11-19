@@ -324,6 +324,92 @@ function ImageSlot({ id, src, alt, className = '', compact = false }) {
   );
 }
 
+function FynveraAssistant({ activeView, workspaceOpen, workspacePage, articleTitle, onCategory, onWorkspace, onCalculator, onAuth }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [messages, setMessages] = useState([
+    { id: 'welcome', role: 'assistant', text: "Hi! I'm the FYNVERA Guide. I can help you find articles, understand market tools, use calculators and manage your account. What would you like help with?" }
+  ]);
+  const quickQuestions = ['How do I start investing?', 'Where can I find calculators?', 'How do I save an article?', 'How do I use the market watchlist?'];
+
+  function getAnswer(question) {
+    const q = question.toLowerCase();
+    const current = workspaceOpen ? workspacePage : articleTitle ? 'Article: ' + articleTitle : activeView;
+    if (/^(hi|hello|hey|good morning|good evening)\b/.test(q.trim())) return { text: 'Hello! Welcome to FYNVERA. Ask me about investing basics, market pages, articles, calculators or your account.' };
+    if (/fynvera|what can you do|what is this site|about this site/.test(q)) return { text: 'FYNVERA is a finance and investing education platform. You can explore market updates, read educational articles, compare market information, use financial calculators and create an account to access your personal workspace.' };
+    if (/start invest|begin invest|new to invest|investing for beginner|how.*invest/.test(q)) return { text: 'A sensible first step is to learn the basics, define your goal and time horizon, build an emergency fund, understand fees and risks, and avoid investing money you need soon. Diversification can reduce concentration risk, but it cannot remove market risk. Start with our beginner investing guides; this is education, not personal investment advice.', actionLabel: 'Explore Investing', actionType: 'category', actionValue: 'Investing' };
+    if (/calculator|compound interest|mortgage|retirement planner|currency converter|loan payoff|savings goal|inflation calculator|risk.reward|break.even/.test(q)) {
+      const calculatorMatches = [
+        [/compound/, 'compound'], [/mortgage|home loan/, 'mortgage'], [/retire/, 'retirement'],
+        [/currency|convert/, 'currency'], [/loan|debt/, 'loan'], [/saving goal/, 'savings-goal'],
+        [/inflation/, 'inflation'], [/stock return|investment return/, 'stock-return'],
+        [/risk.reward|risk reward/, 'risk-reward'], [/break.even/, 'break-even']
+      ];
+      const match = calculatorMatches.find(([pattern]) => pattern.test(q));
+      if (match) {
+        const item = calculatorList.find((calculator) => calculator.id === match[1]);
+        return { text: item ? item.name + ' can help you make an estimate. Enter your assumptions and review the result as an illustration, not a guaranteed outcome.' : 'Open the Tools & Calculators area to explore the available calculators.', actionLabel: item ? 'Open ' + item.name : 'Open calculators', actionType: item ? 'calculator' : 'workspace', actionValue: item ? item.id : 'Tools & Calculators' };
+      }
+      return { text: 'FYNVERA includes 10 tools: Compound Interest, Mortgage, Retirement Planner, Currency Converter, Loan & Debt Payoff, Savings Goal, Inflation, Investment Return, Risk / Reward and Break-even. Which one would you like to use?', actionLabel: 'Open calculators', actionType: 'workspace', actionValue: 'Tools & Calculators' };
+    }
+    if (/market|stock price|crypto price|bitcoin price|forex|gold price|watchlist/.test(q)) {
+      if (/watchlist|watch list|save.*market|add.*market/.test(q)) return { text: 'The market watchlist lets you keep an eye on symbols you choose. Open your Workspace, then choose Watchlist or Markets. You need to sign in to use your personal workspace.', actionLabel: 'Open my workspace', actionType: 'workspace', actionValue: 'Dashboard' };
+      return { text: 'Use the Markets area in your Workspace to browse supported market groups, or choose Crypto, Forex, Stock Market and Commodities from the main navigation. Market quotes can be delayed or unavailable when a provider or market is offline. They are informational, not trading instructions.', actionLabel: 'Explore market categories', actionType: 'category', actionValue: 'Stock Market' };
+    }
+    if (/article|news|read|insight/.test(q)) return { text: 'Choose News & Insights for editorial articles, or open a category such as Investing, Crypto, Forex or Personal Finance. Select an article card to read the full article. You can use the bookmark icon to save an article after signing in.', actionLabel: 'Browse News & Insights', actionType: 'category', actionValue: 'News & Insights' };
+    if (/bookmark|save article|reading list/.test(q)) return { text: 'To save an article, open it and select the bookmark/save icon. Sign in first so your reading list can be associated with your account. You can find saved items in your Workspace.', actionLabel: 'Open my workspace', actionType: 'workspace', actionValue: 'Dashboard' };
+    if (/login|log in|sign in|sign up|register|account|passkey|password|forgot/.test(q)) return { text: 'Use Sign In or Sign Up in the website header. FYNVERA supports email and password, password recovery, and passkey sign-in where enabled on your device. Your private Workspace requires a signed-in account.', actionLabel: 'Sign in / create account', actionType: 'auth', actionValue: 'signin' };
+    if (/workspace|portfolio|profile|publish|comment|follow|like/.test(q)) return { text: 'Your Workspace contains your dashboard, portfolio, author profile, watchlist, markets, calculators and account settings. Sign in to access private tools. Article comments, likes and author follows are available on supported article and author pages.', actionLabel: 'Open my workspace', actionType: 'workspace', actionValue: 'Dashboard' };
+    if (/risk|safe|guarantee|profit|buy|sell|recommend|which coin|which stock/.test(q)) return { text: 'I can explain finance concepts and show you where to find educational tools, but I cannot tell you what to buy or sell or guarantee returns. Consider your goals, time horizon, diversification, fees and ability to absorb losses. For personal recommendations, speak with a qualified financial adviser.' };
+    return { text: 'I can help with FYNVERA navigation, articles, market pages, calculators, account access and workspace tools. You are currently viewing ' + current + '. Try asking “How do I start investing?”, “Open the compound interest calculator” or “How do I save an article?”' };
+  }
+
+  function sendMessage(value = draft) {
+    const question = value.trim();
+    if (!question) return;
+    const answer = getAnswer(question);
+    const stamp = Date.now();
+    setMessages((current) => [...current, { id: 'user-' + stamp, role: 'user', text: question }, { id: 'assistant-' + (stamp + 1), role: 'assistant', ...answer }]);
+    setDraft('');
+  }
+
+  function runAction(message) {
+    if (message.actionType === 'category') onCategory(message.actionValue);
+    if (message.actionType === 'workspace') onWorkspace(message.actionValue);
+    if (message.actionType === 'calculator') onCalculator(message.actionValue);
+    if (message.actionType === 'auth') onAuth(message.actionValue);
+    setIsOpen(false);
+  }
+
+  return (
+    <div className="fynvera-assistant">
+      {isOpen && <section className="assistant-panel" aria-label="FYNVERA assistant" aria-live="polite">
+        <header className="assistant-header">
+          <span className="assistant-avatar"><Icon name="Sparkles" size={19}/></span>
+          <div><strong>FYNVERA Guide</strong><small><span className="assistant-online-dot"/> Here to help you</small></div>
+          <button className="icon-button assistant-close" onClick={() => setIsOpen(false)} aria-label="Close assistant"><Icon name="X" size={19}/></button>
+        </header>
+        <div className="assistant-context">Helping with: {workspaceOpen ? workspacePage : articleTitle ? 'Article' : activeView}</div>
+        <div className="assistant-messages" role="log" aria-live="polite">
+          {messages.map((message) => <div className={'assistant-message assistant-message-' + message.role} key={message.id}>
+            <div className="assistant-bubble">{message.text}</div>
+            {message.actionLabel && <button className="assistant-action" onClick={() => runAction(message)}>{message.actionLabel}<Icon name="ArrowRight" size={14}/></button>}
+          </div>)}
+        </div>
+        {messages.length === 1 && <div className="assistant-suggestions"><span>Suggested questions</span>{quickQuestions.map((question) => <button key={question} onClick={() => sendMessage(question)}>{question}</button>)}</div>}
+        <form className="assistant-input-row" onSubmit={(event) => { event.preventDefault(); sendMessage(); }}>
+          <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Ask FYNVERA Guide..." aria-label="Ask FYNVERA Guide" maxLength={500}/>
+          <button type="submit" disabled={!draft.trim()} aria-label="Send question"><Icon name="Send" size={17}/></button>
+        </form>
+        <p className="assistant-disclaimer">Educational guidance only · Not financial advice</p>
+      </section>}
+      <button className={'assistant-launcher ' + (isOpen ? 'assistant-launcher-open' : '')} onClick={() => setIsOpen((open) => !open)} aria-label={isOpen ? 'Close FYNVERA assistant' : 'Open FYNVERA assistant'} aria-expanded={isOpen}>
+        {isOpen ? <Icon name="X" size={23}/> : <><Icon name="MessageCircle" size={22}/><span>Ask FYNVERA</span><i/></>}
+      </button>
+    </div>
+  );
+}
+
 function Toast({ toast, onClose }) {
   if (!toast) return null;
   return (
@@ -1918,6 +2004,7 @@ export default function App() {
       {authMode && <AuthModal key={authMode} mode={authMode} onClose={() => setAuthMode(null)} onModeChange={setAuthMode} onSubmit={handleAuthSubmit} onGoogle={handleGoogleSignIn} onPasskey={handlePasskeySignIn} busy={authBusy} configured={isSupabaseConfigured}/>}
       {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} articles={articles} onOpenArticle={(article) => { setSearchOpen(false); openArticle(article); }} onCategory={(category) => { setSearchOpen(false); navigateCategory(category); }}/>} 
       {calculator && <CalculatorModal key={calculator.id} calculator={calculator} onClose={() => setCalculatorId(null)} showToast={showToast}/>}
+      <FynveraAssistant activeView={activeView} workspaceOpen={workspaceOpen} workspacePage={workspacePage} articleTitle={selectedArticle?.title} onCategory={navigateCategory} onWorkspace={(page) => navigateWorkspace(page)} onCalculator={openCalculator} onAuth={openAuth}/>
       <Toast toast={toast} onClose={() => setToast(null)}/>
     </div>
   );
