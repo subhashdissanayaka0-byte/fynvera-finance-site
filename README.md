@@ -1,6 +1,6 @@
-# Fynvera — Finance & Investing Website
+# Fynorix — Finance & Investing Website
 
-A responsive finance publishing website and personal planning workspace built with **React + Vite**. The interface follows the supplied Fynvera reference: deep navy surfaces, bright cyan/blue accents, white headings, animated cards, and a mobile-friendly layout.
+A responsive finance publishing website and personal planning workspace built with **React + Vite**. The interface follows the supplied Fynorix reference: deep navy surfaces, bright cyan/blue accents, white headings, animated cards, and a mobile-friendly layout.
 
 ## Included
 
