@@ -150,6 +150,7 @@ export const workspaceItems = [
   { label: 'Advanced Watchlist', icon: 'Star' },
   { label: 'Subscription Manager', icon: 'CalendarClock' },
   { label: 'Finance Learning Center', icon: 'GraduationCap' },
+  { label: 'Financial Games', icon: 'Gamepad2' },
   { label: 'Tax Estimator', icon: 'Calculator' },
   { label: 'Financial Achievements', icon: 'BadgeCheck' },
   { label: 'Investment Comparison', icon: 'Scale' },
