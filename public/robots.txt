@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
-Sitemap: https://example.com/sitemap.xml
+
+# Keep private account/workspace routes out of search when crawled.
+Disallow: /*?*workspace
+
+Sitemap: https://fynvera-finance-site.vercel.app/sitemap.xml
