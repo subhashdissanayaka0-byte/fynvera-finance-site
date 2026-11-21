@@ -1285,7 +1285,7 @@ function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, po
       </>}
       {FINANCE_MANAGER_CONFIG[page] && <FinanceManagerWorkspace page={page} user={user} profile={profile} showToast={showToast}/>}
       {page === 'Financial Intelligence' && <FinancialIntelligenceWorkspace user={user} profile={profile} portfolio={portfolioPositions} cryptoPrices={cryptoPrices} marketQuotes={marketQuotes} showToast={showToast}/>}
-      {page === 'Price Alerts' && <PriceAlertsWorkspace user={user} cryptoPrices={cryptoPrices} marketQuotes={marketQuotes} showToast={showToast}/>}
+      {page === 'Price Alerts' && <PriceAlertsWorkspace user={user} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketStatus={marketStatus} showToast={showToast}/>}
       {page === 'Market News Intelligence' && <MarketNewsIntelligenceWorkspace articles={articles}/>}
       {page === 'Import & Export' && <ImportExportWorkspace user={user} profile={profile} portfolio={portfolio} showToast={showToast}/>}
       {page === 'Dashboard Customization' && <DashboardCustomizationWorkspace showToast={showToast}/>}
