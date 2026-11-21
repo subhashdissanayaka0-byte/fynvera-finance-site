@@ -88,6 +88,7 @@ import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 import { loadLocal, saveLocal } from './lib/storage.js';
 import { FinancialIntelligenceWorkspace, PriceAlertsWorkspace, MarketNewsIntelligenceWorkspace, ImportExportWorkspace, DashboardCustomizationWorkspace, readDashboardLayout } from './components/FynorixFinanceSuite.jsx';
 import { PortfolioAnalyticsWorkspace, EconomicCalendarWorkspace, AdvancedWatchlistWorkspace, SubscriptionManagerWorkspace, FinanceLearningCenterWorkspace, TaxEstimatorWorkspace, FinancialAchievementsWorkspace, InvestmentComparisonWorkspace, CommunityHubWorkspace, ProReportsWorkspace } from './components/FynorixGrowthSuite.jsx';
+import FinancialMiniGames from './components/FinancialMiniGames.jsx';
 
 // Public Binance market data only: these symbols do not require an API key or account credentials.
 const BINANCE_COINS = [
@@ -698,6 +699,7 @@ function HomePage({ articles, onOpenArticle, onCategory, onWorkspace, onCalculat
         <span className="ticker-source">BINANCE SPOT · 24H</span>
       </section>
       <AdSlot id="ADSLOT-HOME-001" format="wide"/>
+      <FinancialMiniGames />
 
       <section className="home-feature-section section-gap">
         <div className="feature-story-wrap">
