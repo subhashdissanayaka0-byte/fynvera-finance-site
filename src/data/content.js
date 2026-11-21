@@ -140,6 +140,11 @@ export const markets = [
 
 export const workspaceItems = [
   { label: 'Dashboard', icon: 'LayoutDashboard' },
+  { label: 'Financial Intelligence', icon: 'Sparkles' },
+  { label: 'Price Alerts', icon: 'BellRing' },
+  { label: 'Market News Intelligence', icon: 'Activity' },
+  { label: 'Import & Export', icon: 'FileSpreadsheet' },
+  { label: 'Dashboard Customization', icon: 'SlidersHorizontal' },
   { label: 'My Portfolio', icon: 'BriefcaseBusiness' },
   { label: 'Budget Planner', icon: 'Wallet' },
   { label: 'Transactions', icon: 'ArrowLeftRight' },
