@@ -86,9 +86,12 @@ export function FinancialIntelligenceWorkspace({user,profile,portfolio=[],crypto
   const goals=records.finance_goals||[];
   const goalsSaved=goals.reduce((s,g)=>s+Number(g.current_amount||0),0);
   const goalsTarget=goals.reduce((s,g)=>s+Number(g.target_amount||0),0);
+  const budgetOverspend=budgets.reduce((sum,b)=>sum+Math.max(0,budgetSpent(b)-Number(b.monthly_limit||0)),0);
+  const budgetTotal=budgets.reduce((sum,b)=>sum+Number(b.monthly_limit||0),0);
+  const budgetScore=budgets.length?Math.max(0,Math.min(25,25*(1-budgetOverspend/Math.max(1,budgetTotal)))):null;
   const scoreParts=[
     {label:'Savings habit',score:savingsRate===null?null:Math.max(0,Math.min(30,savingsRate/20*30)),max:30,detail:savingsRate===null?'Add income and expense transactions':savingsRate.toFixed(1)+'% saved this month'},
-    {label:'Budget control',score:budgets.length?Math.max(0,Math.min(25,25*(1-budgets.reduce((s,b)=>s+Math.max(0,budgetSpent(b)-Number(b.monthly_limit||0)),0)/Math.max(1,budgets.reduce((s,b)=>s+Number(b.monthly_limit||0),0)))):null,max:25,detail:budgets.length?budgets.length+' active category budgets':'Set a monthly budget'},
+    {label:'Budget control',score:budgetScore,max:25,detail:budgets.length?budgets.length+' active category budgets':'Set a monthly budget'},
     {label:'Debt pressure',score:records.finance_debts.length?(income>0?Math.max(0,25-Math.min(25,minimumPayments/income*100)):12.5):25,max:25,detail:records.finance_debts.length?moneyFmt(debtTotal,currency)+' tracked debt':'No debt entries recorded'},
     {label:'Savings progress',score:goals.length?Math.min(20,goalsTarget>0?goalsSaved/goalsTarget*20:0):null,max:20,detail:goals.length?moneyFmt(goalsSaved,currency)+' saved toward goals':'Create a savings goal'}
   ];
