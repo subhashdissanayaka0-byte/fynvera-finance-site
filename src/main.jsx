@@ -1,4 +1,4 @@
-// React entry point: mounts the complete Fynvera finance and investing experience.
+// React entry point: mounts the complete Fynorix finance and investing experience.
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
