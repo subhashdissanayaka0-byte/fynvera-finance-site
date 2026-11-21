@@ -35,13 +35,14 @@ export default async function handler(req, res) {
   // generateContent endpoint for this model.
   const endpoint = 'https://generativelanguage.googleapis.com/v1beta/interactions';
   const payload = {
-    model: 'gemini-3.8-flash',
+    model: 'gemini-3.5-flash-lite',
     input: conversation,
     system_instruction: systemInstruction,
     store: false,
     generation_config: {
-      temperature: 0.65,
-      max_output_tokens: 700
+      thinking_level: 'minimal',
+      temperature: 0.5,
+      max_output_tokens: 500
     }
   };
 
