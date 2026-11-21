@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#20e0ed"/><stop offset="1" stop-color="#1979ff"/></linearGradient></defs>
+  <defs>
+    <linearGradient id="fynorix" x1="8" y1="7" x2="57" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#45F0E0"/>
+      <stop offset="1" stop-color="#398BFF"/>
+    </linearGradient>
+  </defs>
   <rect width="64" height="64" rx="17" fill="#061629"/>
-  <path d="M9 43 22 30l9 8L49 17" fill="none" stroke="url(#g)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M39 17h10v10" fill="none" stroke="url(#g)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15 49V14H43M15 29H36" fill="none" stroke="url(#fynorix)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 48L39 37L45 41L55 25M45 25H55V35" fill="none" stroke="url(#fynorix)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
