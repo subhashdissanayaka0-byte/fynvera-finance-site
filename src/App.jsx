@@ -1029,14 +1029,57 @@ function PublishArticleWorkspace({ user, onPublish, onDeleteArticle, onOpenArtic
   </>;
 }
 
+const WORKSPACE_NAV_GROUPS = [
+  { label: 'Overview', icon: 'LayoutDashboard', items: ['Dashboard'] },
+  { label: 'My Finances', icon: 'Wallet', items: ['My Portfolio', 'Budget Planner', 'Transactions', 'Savings Goals', 'Debt Tracker', 'Bills & Subscriptions'] },
+  { label: 'Markets & Investing', icon: 'ChartNoAxesCombined', items: ['Watchlist', 'Markets', 'Investing', 'Forex', 'Real Estate', 'Commodities'] },
+  { label: 'Insights & Learning', icon: 'BookOpenText', items: ['News & Insights', 'Market News Intelligence', 'Education', 'Regulatory Policy'] },
+  { label: 'Smart Tools', icon: 'Sparkles', items: ['Financial Intelligence', 'Price Alerts', 'Tools & Calculators', 'Import & Export', 'Dashboard Customization'] },
+  { label: 'Profile & Account', icon: 'UserRound', items: ['Author Profile', 'Publish Article', 'Settings'] }
+];
+
 function WorkspaceSidebar({ active, collapsed, onToggle, onNavigate, user, mobileOpen, onCloseMobile }) {
+  const activeGroup = WORKSPACE_NAV_GROUPS.find((group) => group.items.includes(active))?.label || 'Overview';
+  const [expandedGroup, setExpandedGroup] = useState(activeGroup);
+  useEffect(() => {
+    if (activeGroup) setExpandedGroup(activeGroup);
+  }, [activeGroup]);
+
+  const renderNavItem = (item) => {
+    const config = workspaceItems.find((entry) => entry.label === item);
+    if (!config) return null;
+    return (
+      <button key={config.label} title={collapsed ? config.label : undefined}
+        className={`workspace-nav-link workspace-nav-subitem ${active === config.label ? 'workspace-nav-active' : ''} ${config.special ? 'workspace-nav-logout' : ''}`}
+        onClick={() => { onNavigate(config.label); onCloseMobile(); }}>
+        <Icon name={config.icon} size={17}/><span>{config.label}</span>
+        {active === config.label && <i className="nav-active-indicator"/>}
+      </button>
+    );
+  };
+
   return (
     <aside className={`workspace-sidebar ${collapsed ? 'workspace-sidebar-collapsed' : ''} ${mobileOpen ? 'workspace-sidebar-mobile-open' : ''}`}>
       <div className="workspace-brand-row"><Brand onClick={() => onNavigate('Dashboard')}/><button className="icon-button sidebar-collapse" onClick={onToggle} aria-label={collapsed ? 'Expand sidebar' : 'Minimize sidebar'}><Icon name={collapsed ? 'PanelLeftOpen' : 'PanelLeftClose'} size={18}/></button><button className="icon-button sidebar-mobile-close" onClick={onCloseMobile} aria-label="Close workspace navigation"><Icon name="X" size={18}/></button></div>
       <div className="workspace-user-mini"><span className="avatar avatar-medium">{user?.avatar ? <img src={user.avatar} alt=""/> : (user?.name || user?.email || 'U').slice(0, 1).toUpperCase()}</span><div><strong>{user?.name || 'Your workspace'}</strong><small>{user?.email || 'Preview account'}</small></div><span className="user-status-dot"/></div>
       <div className="sidebar-section-label">WORKSPACE</div>
-      <nav className="workspace-nav" aria-label="Workspace navigation">{workspaceItems.map((item) => <button key={item.label} title={collapsed ? item.label : undefined} className={`workspace-nav-link ${active === item.label ? 'workspace-nav-active' : ''} ${item.special ? 'workspace-nav-logout' : ''} ${item.subItem ? 'workspace-nav-link-subitem' : ''}`} onClick={() => { onNavigate(item.label); onCloseMobile(); }}><Icon name={item.icon} size={19}/><span>{item.label}</span>{active === item.label && <i className="nav-active-indicator"/>}</button>)}</nav>
-      <div className="sidebar-bottom-card"><div className="sidebar-bottom-icon"><Icon name="Sparkles" size={17}/></div><strong>Small steps add up.</strong><p>Learn a new money concept this week.</p><button onClick={() => onNavigate('Education')}>Explore learning <Icon name="ArrowRight" size={14}/></button></div>
+      <nav className="workspace-nav workspace-nav-grouped" aria-label="Workspace navigation">
+        {WORKSPACE_NAV_GROUPS.map((group) => {
+          const isOpen = expandedGroup === group.label;
+          const containsActive = group.items.includes(active);
+          return (
+            <section className={`workspace-nav-group ${isOpen ? 'workspace-nav-group-open' : ''} ${containsActive ? 'workspace-nav-group-active' : ''}`} key={group.label}>
+              <button type="button" className="workspace-nav-group-toggle" title={collapsed ? group.label : undefined}
+                aria-expanded={isOpen} onClick={() => setExpandedGroup((current) => current === group.label ? '' : group.label)}>
+                <Icon name={group.icon} size={18}/><span>{group.label}</span><Icon name="ChevronDown" size={14} className="workspace-nav-group-chevron"/>
+              </button>
+              {isOpen && <div className="workspace-nav-subitems">{group.items.map(renderNavItem)}</div>}
+            </section>
+          );
+        })}
+        {renderNavItem('Log Out')}
+      </nav>
+      {!collapsed && <div className="sidebar-bottom-card"><div className="sidebar-bottom-icon"><Icon name="Sparkles" size={17}/></div><strong>Small steps add up.</strong><p>Learn a new money concept this week.</p><button onClick={() => onNavigate('Education')}>Explore learning <Icon name="ArrowRight" size={14}/></button></div>}
       <div className="sidebar-footer"><span className="privacy-dot"/> {collapsed ? 'Private' : 'Your space, your pace'}</div>
     </aside>
   );
