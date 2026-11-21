@@ -108,7 +108,7 @@ export function FinancialIntelligenceWorkspace({user,profile,portfolio=[],crypto
     const quote=marketQuotes[qSymbol]||marketQuotes[qSymbol.replace(/[^A-Z0-9]/g,'')];
     const price=Number(ticker?.lastPrice??quote?.mid??quote?.lastPrice??quote?.bid??0);
     const amount=Number(item.quantity||1);
-    const value=price>0?price*amount:Number(item.value??item.current_value??item.cost_basis??0);
+    const value=price>0?price*amount:Number(item.currentValue??item.value??item.current_value??item.investedValue??item.cost_basis??0);
     if(value>0)allocation[type]=(allocation[type]||0)+value;
   });
   const totalAllocation=Object.values(allocation).reduce((s,v)=>s+v,0);
