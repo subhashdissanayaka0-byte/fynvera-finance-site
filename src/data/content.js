@@ -151,7 +151,7 @@ export const workspaceItems = [
   { label: 'Subscription Manager', icon: 'CalendarClock' },
   { label: 'Finance Learning Center', icon: 'GraduationCap' },
   { label: 'Tax Estimator', icon: 'Calculator' },
-  { label: 'Financial Achievements', icon: 'Award' },
+  { label: 'Financial Achievements', icon: 'BadgeCheck' },
   { label: 'Investment Comparison', icon: 'Scale' },
   { label: 'FYNORIX Community', icon: 'MessageCircle' },
   { label: 'Pro Reports', icon: 'FileText' },
