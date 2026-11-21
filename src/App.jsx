@@ -638,7 +638,7 @@ function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, on
           <p className="article-lead">{article.excerpt}</p>
           <div className="article-byline"><div className="author-avatar">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><strong>{article.author || 'Fynorix Editorial'}</strong><small>{article.authorRole || 'Finance Contributor'}{articleWasEdited(article) ? ' · EDITED' : ''}</small></div><span className="byline-separator" /><span><Icon name="CalendarDays" size={15} />{formatDate(article.date)}</span><span><Icon name="Clock3" size={15} />{article.readTime || 5} min read</span></div>
           {article.authorId && <div className="article-top-follow"><FollowAuthorButton targetId={article.authorId} user={user} authorName={article.author} onAuth={onAuth} showToast={showToast}/></div>}
-          <div className="article-detail-image"><ImageSlot id={article.imageId || 'IMG-ARTICLE-CUSTOM'} src={article.image} alt={article.title} /></div>
+          <div className="article-detail-image"><ImageSlot id={article.imageId || 'IMG-ARTICLE-CUSTOM'} src={article.image} alt={article.imageAltText || article.title} />{article.imageDescription && <p className="article-image-caption">{article.imageDescription}</p>}</div>
           <div className="article-toolbar"><span><Icon name="BookOpenText" size={16} /> Reading guide</span><div><button className={`button button-soft button-small ${watched ? 'button-soft-active' : ''}`} onClick={() => onToggleWatch(article)}><Icon name={watched ? 'BookmarkCheck' : 'Bookmark'} size={15} />{watched ? 'Saved' : 'Save article'}</button><button className="button button-soft button-small" onClick={() => onShare(article)}><Icon name="Share2" size={15} />Share</button></div></div>
           <div className="article-body-copy">{articleText.map((paragraph, index) => <React.Fragment key={`${article.id}-${index}`}><p>{paragraph}</p>{index === 1 && <AdSlot id="ADSLOT-ARTICLE-001" format="article"/>}</React.Fragment>)}<div className="disclaimer-block"><Icon name="ShieldCheck" size={19} /><p><strong>Important note</strong><br />This content is for general education only. It is not personal financial, investment, tax or legal advice. Market values and examples may be illustrative.</p></div></div>
           <div className="keyword-tags">{(article.keywords || []).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>#{keyword.replaceAll(' ', '')}</button>)}</div>
@@ -943,7 +943,7 @@ function PublishArticleWorkspace({ user, onPublish, onDeleteArticle, onOpenArtic
     let active = true;
     const loadOwned = async () => {
       if (supabase && !user.demo && isUuid(user.id)) {
-        const { data, error } = await supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,created_at,updated_at,user_id,status,content_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(200);
+        const { data, error } = await supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,image_alt_text,image_description,created_at,updated_at,user_id,status,content_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(200);
         if (!active) return;
         if (error) { showToast(`Your article library could not load: ${error.message}`, 'error'); return; }
         setOwnedArticles((data || []).map((row) => mapDatabaseArticle(row, user)));
@@ -1743,7 +1743,7 @@ function mapDatabaseArticle(row, currentUser = null) {
     slug: `${slugify(row.title)}-${String(row.id).slice(0, 8)}`, excerpt: row.summary || '',
     category: row.category || 'Investing', subcategory: row.subcategory || '', contentType: row.content_type || 'news_insights',
     author: row.user_id === currentUser?.id ? (currentUser.name || 'Fynorix Contributor') : 'Fynorix Contributor',
-    authorRole: 'Finance Contributor', image: row.image_url || '', imageId: 'IMG-ARTICLE-CUSTOM',
+    authorRole: 'Finance Content Creator · FYNORIX', image: row.image_url || '', imageAltText: row.image_alt_text || '', imageDescription: row.image_description || '', imageId: 'IMG-ARTICLE-CUSTOM',
     body: articleBody.split(/\n\s*\n/).map((part) => part.trim()).filter(Boolean), keywords,
     date: row.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
     createdAt: row.created_at, updatedAt: row.updated_at || null, status: row.status || 'published',
@@ -2004,7 +2004,7 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return;
     let isMounted = true;
-    supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,created_at,updated_at,user_id,status,content_type').eq('status', 'published').order('created_at', { ascending: false }).limit(100).then(async ({ data, error }) => {
+    supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,image_alt_text,image_description,created_at,updated_at,user_id,status,content_type').eq('status', 'published').order('created_at', { ascending: false }).limit(100).then(async ({ data, error }) => {
       if (error || !data || !isMounted) {
         if (error) console.warn('Published articles could not be loaded.', error.message);
         return;
@@ -2298,7 +2298,7 @@ export default function App() {
         } else {
           query = query.insert(payload);
         }
-        const { data, error } = await query.select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,created_at,updated_at,user_id,status,content_type').single();
+        const { data, error } = await query.select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,image_alt_text,image_description,created_at,updated_at,user_id,status,content_type').single();
         if (error) throw error;
         if (!data) throw new Error('The database did not return the saved article.');
         const mapped = mapDatabaseArticle(data, currentUser);
