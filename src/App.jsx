@@ -1791,13 +1791,14 @@ export default function App() {
   // Never restore a browser-only preview identity as an authenticated session. Supabase restores real sessions below.
   const [currentUser, setCurrentUser] = useState(null);
   const [articles, setArticles] = useState(() => {
-    const saved = loadLocal('articles', seedArticles);
-    // Migrate older browser cache entries too: the first seed remains the editorial feature,
-    // while the rest are topic-page starter content and do not bleed into the News & Insights feed.
-    return (Array.isArray(saved) ? saved : seedArticles).map((article) => ({
-      ...article,
-      contentType: article.contentType || (article.id === 'seed-wall-street-rally' ? 'news_insights' : String(article.id || '').startsWith('seed-') ? 'topic' : 'news_insights')
-    }));
+    // Ignore legacy seed/demo placeholders left in this browser's local cache.
+    const saved = loadLocal('articles', []);
+    return (Array.isArray(saved) ? saved : [])
+      .filter((article) => !String(article.id || '').startsWith('seed-'))
+      .map((article) => ({
+        ...article,
+        contentType: article.contentType || 'news_insights'
+      }));
   });
   const [watchlist, setWatchlist] = useState(() => loadLocal('articleWatchlist', []));
   // Start with an empty portfolio: users should not mistake illustrative figures for their own finances.
@@ -2005,7 +2006,7 @@ export default function App() {
     let isMounted = true;
     supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,created_at,updated_at,user_id,status,content_type').eq('status', 'published').order('created_at', { ascending: false }).limit(100).then(async ({ data, error }) => {
       if (error || !data || !isMounted) {
-        if (error) console.warn('Published articles could not be loaded; showing the starter library.', error.message);
+        if (error) console.warn('Published articles could not be loaded.', error.message);
         return;
       }
       const authorIds = [...new Set(data.map((row) => row.user_id).filter(Boolean))];
@@ -2020,7 +2021,7 @@ export default function App() {
         const author = profileById[row.user_id];
         return { ...article, author: author?.display_name || author?.username || article.author, authorAvatar: author?.avatar_url || '' };
       });
-      setArticles((current) => [...databaseArticles, ...current.filter((article) => String(article.id).startsWith('seed-') || String(article.id).startsWith('demo-'))]);
+      setArticles((current) => [...databaseArticles, ...current.filter((article) => String(article.id || '').startsWith('demo-'))]);
     }).catch((error) => console.warn('Published articles could not be loaded; showing the starter library.', error));
     return () => { isMounted = false; };
   }, [currentUser?.id, currentUser?.name]);
