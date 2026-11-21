@@ -1145,6 +1145,103 @@ function FinanceManagerWorkspace({ page, user, showToast, profile }) {
   </div>;
 }
 
+
+function FinancialReportPanel({ user, profile, portfolio, showToast }) {
+  const [period, setPeriod] = useState('month');
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const currency = profile?.currency || 'USD';
+  const displayName = profile?.name || user?.name || user?.email?.split('@')[0] || 'FYNVERA Member';
+  const now = new Date();
+  const range = useMemo(() => {
+    const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(end);
+    if (period === 'week') start.setDate(start.getDate() - 6);
+    else if (period === 'month') start.setDate(1);
+    else start.setMonth(0, 1);
+    return { start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+  }, [period]);
+  const money = (value) => {
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2 }).format(Number(value || 0)); }
+    catch { return currency + ' ' + Number(value || 0).toFixed(2); }
+  };
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    const key = 'fynvera-finance-' + (user?.id || 'preview') + '-finance_transactions';
+    if (!supabase || !user || user.demo) {
+      const local = loadLocal(key, []);
+      if (active) { setTransactions(local); setLoading(false); }
+      return () => { active = false; };
+    }
+    supabase.from('finance_transactions').select('*').gte('occurred_on', range.start).lte('occurred_on', range.end).order('occurred_on', { ascending: true })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) { console.warn('Financial report transactions could not be loaded.', error); setTransactions([]); }
+        else setTransactions(data || []);
+        setLoading(false);
+      });
+    return () => { active = false; };
+  }, [user?.id, user?.demo, range.start, range.end]);
+  const income = transactions.filter((item) => String(item.kind).toLowerCase() === 'income').reduce((sum,item) => sum + Number(item.amount || 0), 0);
+  const expenses = transactions.filter((item) => String(item.kind).toLowerCase() !== 'income').reduce((sum,item) => sum + Number(item.amount || 0), 0);
+  const net = income - expenses;
+  const savingsRate = income > 0 ? net / income * 100 : null;
+  const categories = Object.entries(transactions.filter((item) => String(item.kind).toLowerCase() !== 'income').reduce((acc,item) => {
+    const name = item.category || 'Other'; acc[name] = (acc[name] || 0) + Number(item.amount || 0); return acc;
+  }, {})).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const portfolioValue = (portfolio || []).reduce((sum,item) => sum + Number(item.value || 0), 0);
+  const periodLabel = period === 'week' ? 'WEEKLY REPORT' : period === 'month' ? 'MONTHLY REPORT' : 'YEARLY REPORT';
+  const periodTitle = period === 'week' ? 'Your week in money' : period === 'month' ? 'Your month in money' : 'Your year in money';
+  const dateLabel = new Date(range.start + 'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) + ' – ' + new Date(range.end + 'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+  const downloadReport = () => {
+    const canvas = document.createElement('canvas'); canvas.width = 1200; canvas.height = 1500;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) { showToast('Could not create the report image on this device.', 'error'); return; }
+    const bg = ctx.createLinearGradient(0,0,1200,1500); bg.addColorStop(0,'#071525'); bg.addColorStop(1,'#0c263a');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,1200,1500);
+    const rounded = (x,y,w,h,r,color) => { ctx.fillStyle=color; ctx.beginPath(); ctx.roundRect(x,y,w,h,r); ctx.fill(); };
+    rounded(54,48,1092,1404,34,'#10263a');
+    ctx.fillStyle='#22d3e5'; ctx.font='700 34px Arial'; ctx.fillText('FYNVERA',92,116);
+    ctx.fillStyle='#8da9bc'; ctx.font='600 18px Arial'; ctx.fillText('PERSONAL FINANCE · PRIVATE REPORT',92,154);
+    ctx.fillStyle='#f4f8fb'; ctx.font='700 52px Arial'; ctx.fillText(periodTitle,92,250);
+    ctx.fillStyle='#a8c0d0'; ctx.font='24px Arial'; ctx.fillText(displayName.slice(0,42),92,302);
+    ctx.font='20px Arial'; ctx.fillText(dateLabel,92,342);
+    rounded(88,390,1024,260,24,'#17364c');
+    ctx.fillStyle='#8fb4c7'; ctx.font='600 18px Arial'; ctx.fillText('NET CASH FLOW',124,444);
+    ctx.fillStyle=net>=0?'#5ce0b4':'#ff9a9a'; ctx.font='700 58px Arial'; ctx.fillText(money(net),124,520);
+    ctx.fillStyle='#a8c0d0'; ctx.font='22px Arial'; ctx.fillText('Income',124,590); ctx.fillText('Expenses',560,590);
+    ctx.fillStyle='#f5fbff'; ctx.font='700 28px Arial'; ctx.fillText(money(income),124,628); ctx.fillText(money(expenses),560,628);
+    rounded(88,690,492,180,22,'#17364c'); rounded(604,690,508,180,22,'#17364c');
+    ctx.fillStyle='#8fb4c7'; ctx.font='600 18px Arial'; ctx.fillText('SAVINGS RATE',124,738);
+    ctx.fillStyle='#f5fbff'; ctx.font='700 42px Arial'; ctx.fillText(savingsRate===null?'—':savingsRate.toFixed(1)+'%',124,808);
+    ctx.fillStyle='#8fb4c7'; ctx.font='600 18px Arial'; ctx.fillText('PORTFOLIO VALUE · CURRENT',640,738);
+    ctx.fillStyle='#f5fbff'; ctx.font='700 34px Arial'; ctx.fillText(money(portfolioValue),640,808);
+    ctx.fillStyle='#f5fbff'; ctx.font='700 26px Arial'; ctx.fillText('SPENDING BREAKDOWN',92,944);
+    if (categories.length) {
+      const max = Math.max(...categories.map((item)=>item[1]),1);
+      categories.forEach(([name,value],i)=>{ const y=1000+i*66; ctx.fillStyle='#c7d8e3'; ctx.font='22px Arial'; ctx.fillText(name.slice(0,24),100,y); rounded(390,y-24,500,18,9,'#24475d'); rounded(390,y-24,500*Math.max(0,value)/max,18,9,'#22d3e5'); ctx.fillStyle='#f5fbff'; ctx.textAlign='right'; ctx.font='20px Arial'; ctx.fillText(money(value),1080,y); ctx.textAlign='left'; });
+    } else { ctx.fillStyle='#a8c0d0'; ctx.font='22px Arial'; ctx.fillText('No expense entries recorded for this period.',100,1010); }
+    ctx.fillStyle='#8da9bc'; ctx.font='18px Arial'; ctx.fillText('Generated from the records saved in your FYNVERA workspace.',92,1370);
+    ctx.fillText('Educational overview only · Not financial advice',92,1408);
+    const link=document.createElement('a'); link.download='FYNVERA_' + period + '_Report_' + range.end + '.png'; link.href=canvas.toDataURL('image/png'); link.click();
+    showToast('Your financial report image has been downloaded.', 'success');
+  };
+  return <section className="panel financial-report-panel">
+    <div className="panel-heading"><div><span className="eyebrow"><span/> YOUR MONEY, CLEARLY</span><h2>Financial reports</h2><p>Create a personal report with your name and download it as a PNG image.</p></div><span className="heading-icon"><Icon name="FileText" size={20}/></span></div>
+    <div className="financial-report-controls" role="group" aria-label="Report period">{[['week','Weekly'],['month','Monthly'],['year','Yearly']].map(([value,label])=><button key={value} type="button" className={'button button-small ' + (period===value?'button-primary':'button-outline')} onClick={()=>setPeriod(value)}>{label}</button>)}</div>
+    <div className="financial-report-preview">
+      <div className="financial-report-preview-top"><div><span>FYNVERA · {periodLabel}</span><h3>{periodTitle}</h3><strong>{displayName}</strong><small>{dateLabel}</small></div><span className="financial-report-mark"><Icon name="ChartNoAxesCombined" size={26}/></span></div>
+      {loading ? <div className="empty-state"><Icon name="LoaderCircle" className="spin" size={24}/><span>Preparing your report…</span></div> : <>
+        <div className="financial-report-metrics"><div><small>INCOME</small><strong>{money(income)}</strong></div><div><small>EXPENSES</small><strong>{money(expenses)}</strong></div><div><small>NET CASH FLOW</small><strong className={net>=0?'positive':'negative'}>{money(net)}</strong></div><div><small>SAVINGS RATE</small><strong>{savingsRate===null?'—':savingsRate.toFixed(1)+'%'}</strong></div></div>
+        <div className="financial-report-breakdown"><div><strong>Spending breakdown</strong>{categories.length ? categories.map(([name,value])=><div className="financial-report-category" key={name}><span>{name}</span><strong>{money(value)}</strong></div>) : <p>No expense records for this period yet.</p>}</div><div className="financial-report-portfolio"><small>CURRENT PORTFOLIO VALUE</small><strong>{money(portfolioValue)}</strong><span>Latest saved holdings · not period-end valuation</span></div></div>
+      </>}
+    </div>
+    <div className="financial-report-footer"><span><Icon name="ShieldCheck" size={15}/> Uses your private workspace records only.</span><button type="button" className="button button-primary" onClick={downloadReport} disabled={loading}><Icon name="Download" size={16}/> Download PNG report</button></div>
+    <p className="finance-manager-disclaimer">Reports include only transactions recorded in FYNVERA for the selected dates. Missing entries are not estimated. Portfolio value is the current saved portfolio snapshot.</p>
+  </section>;
+}
+
 function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, portfolio, profile, onProfileChange, onAvatarChange, onAddHolding, onRemoveHolding, onMarketWatchChange, onToggleWatch, onOpenArticle, onPublish, onEditArticle, onDeleteArticle, onCalculator, onAuth, onRegisterPasskey, passkeyBusy = false, onCategory, showToast, cryptoPrices = {}, cryptoStatus = 'connecting', marketQuotes = {}, marketCatalog = [], marketStatus = 'connecting', marketFetchedAt = null }) {
   const [holdingSymbol, setHoldingSymbol] = useState('BTC');
   const [holdingType, setHoldingType] = useState('Crypto');
@@ -1172,6 +1269,7 @@ function WorkspaceContent({ page, user, articles, watchlist, marketWatchlist, po
       {page === 'Dashboard' && <>
         <div className="workspace-welcome"><div><div className="eyebrow"><span/> YOUR FINANCIAL HOME</div><h1>Good to see you, {(user?.name || 'investor').split(' ')[0]}.</h1><p>A calm place to keep track of what you are learning and working toward.</p></div><div className="welcome-date"><Icon name="CalendarDays" size={16}/>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</div></div>
         <div className="demo-banner"><Icon name="Info" size={17}/><div><strong>{isSupabaseConfigured ? 'Your Supabase connection is configured.' : 'You are viewing a free preview workspace.'}</strong><span>{isSupabaseConfigured ? 'Saved data depends on your account permissions and database policies.' : 'Your demo profile, reading list and portfolio notes stay in this browser. Connect a free Supabase project for secure multi-device accounts.'}</span></div><button onClick={() => onCategory('Education')}>Learn how it works <Icon name="ArrowRight" size={14}/></button></div>
+        <FinancialReportPanel user={user} profile={profile} portfolio={portfolio} showToast={showToast}/>
         <div className="dashboard-summary-grid"><div className="summary-card summary-card-highlight"><div className="summary-card-top"><span>PORTFOLIO VALUE · USD</span><span className="summary-icon"><Icon name="Wallet" size={18}/></span></div><strong>{formatMoney(portfolioValue, 'USD')}</strong><small className={portfolioGain >= 0 ? 'positive' : 'negative'}><Icon name={portfolioGain >= 0 ? 'TrendingUp' : 'TrendingDown'} size={13}/> {portfolioGain >= 0 ? '+' : ''}{formatMoney(portfolioGain, 'USD')} ({portfolioGainPercent.toFixed(2)}%) overall P/L</small><button onClick={() => onCategory('Personal Finance')}>Keep your plan in view <Icon name="ArrowRight" size={14}/></button></div><div className="summary-card"><div className="summary-card-top"><span>SAVED INSIGHTS</span><span className="summary-icon"><Icon name="Bookmark" size={18}/></span></div><strong>{watchlist.length.toString().padStart(2, '0')} <small>articles</small></strong><small>Ideas to read or revisit later</small><button onClick={() => onCategory('Education')}>Keep learning <Icon name="ArrowRight" size={14}/></button></div><div className="summary-card"><div className="summary-card-top"><span>WATCHLIST</span><span className="summary-icon"><Icon name="Eye" size={18}/></span></div><strong>{marketWatchlist.length.toString().padStart(2, '0')} <small>markets</small></strong><small>Examples saved for tracking</small><button onClick={() => onCategory('Stock Market')}>Explore markets <Icon name="ArrowRight" size={14}/></button></div><div className="summary-card"><div className="summary-card-top"><span>FINANCE HABIT</span><span className="summary-icon"><Icon name="CalendarCheck" size={18}/></span></div><strong>1 <small>next step</small></strong><small>Choose one small action this week</small><button onClick={() => onCategory('Personal Finance')}>Set your next step <Icon name="ArrowRight" size={14}/></button></div></div>
         <div className="workspace-main-grid"><section className="panel workspace-table-panel"><div className="panel-heading"><div><h3>Your portfolio</h3><p>Live market valuation · Prices refresh with FYNVERA market data</p></div><button className="text-link text-link-small" onClick={() => onNavigateSafe('My Portfolio')}>View portfolio <Icon name="ArrowRight" size={14}/></button></div><PortfolioTable portfolio={portfolioPositions.slice(0, 4)} onRemove={onRemoveHolding} currency="USD"/></section><section className="panel dashboard-side-panel"><div className="panel-heading"><div><h3>Keep moving forward</h3><p>Simple actions for your money journey</p></div><span className="heading-icon"><Icon name="Compass" size={19}/></span></div><div className="quick-action-list"><button onClick={() => onNavigateSafe('My Portfolio')}><span className="quick-action-icon"><Icon name="BriefcaseBusiness" size={17}/></span><span><strong>Review your portfolio notes</strong><small>Update values and goals</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onCalculator('compound')}><span className="quick-action-icon"><Icon name="Calculator" size={17}/></span><span><strong>Try a calculator</strong><small>Explore future scenarios</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onNavigateSafe('News & Insights')}><span className="quick-action-icon"><Icon name="BookOpenText" size={17}/></span><span><strong>Read your next insight</strong><small>Short, practical explainers</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onNavigateSafe('Budget Planner')}><span className="quick-action-icon"><Icon name="Wallet" size={17}/></span><span><strong>Plan this month's budget</strong><small>Set spending limits by category</small></span><Icon name="ArrowUpRight" size={16}/></button><button onClick={() => onNavigateSafe('Savings Goals')}><span className="quick-action-icon"><Icon name="Target" size={17}/></span><span><strong>Track a savings goal</strong><small>See progress toward a target</small></span><Icon name="ArrowUpRight" size={16}/></button></div></section></div>
         <section className="workspace-latest-section"><SectionTitle eyebrow="FRESH PERSPECTIVES" title="A few ideas worth your time" actionLabel="All insights" onAction={() => onNavigateSafe('News & Insights')}/><div className="workspace-article-grid">{latestItems.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={onToggleWatch} watched={watchlist.includes(article.id)}/>)}</div></section>
