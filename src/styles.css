@@ -2207,3 +2207,62 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 .fynorix-games-note{margin:13px 2px 0;color:var(--muted,#829bb4);font-size:10px;line-height:1.6}
 @media(max-width:720px){.fynorix-games-heading{align-items:flex-start;flex-direction:column}.fynorix-games-layout{grid-template-columns:1fr}.fynorix-games-list{grid-template-columns:repeat(2,minmax(0,1fr))}.fynorix-game-choice{padding:9px;gap:7px}.fynorix-game-emoji{flex-basis:32px;width:32px;height:32px}.fynorix-game-number{display:none}.fynorix-game-stage{min-height:0}.fynorix-budget-controls{grid-template-columns:1fr}}
 @media(max-width:420px){.fynorix-games-list{grid-template-columns:1fr}.fynorix-game-options.two{grid-template-columns:1fr}.fynorix-risk-list label{align-items:flex-start;flex-direction:column}.fynorix-risk-list select{max-width:none;width:100%}}
+
+
+/* Financial Games — private workspace module */
+.financial-games-workspace{display:grid;gap:18px}
+.financial-games-summary{display:grid;grid-template-columns:repeat(3,minmax(100px,.7fr)) minmax(180px,1.6fr);gap:10px}
+.financial-games-summary>div{padding:16px;border:1px solid var(--border,rgba(120,160,190,.18));border-radius:13px;background:var(--panel,rgba(15,31,48,.8))}
+.financial-games-summary>div>strong{display:block;font-size:23px;letter-spacing:-.04em}
+.financial-games-summary>div>span{display:block;margin-top:4px;color:var(--muted,#91a9bb);font-size:11px}
+.financial-games-progress>div{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;font-size:11px}
+.financial-games-progress>div span{color:var(--muted,#91a9bb)}
+.financial-games-progress>div b{color:#62d9ca}
+.financial-games-progress>i,.financial-game-question-progress{display:block;height:6px;border-radius:20px;background:rgba(130,165,190,.16);overflow:hidden}
+.financial-games-progress>i em,.financial-game-question-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#20c6d9,#5be0b6);transition:width .25s}
+.financial-games-layout{display:grid;grid-template-columns:minmax(240px,.75fr) minmax(0,1.65fr);gap:14px;align-items:start}
+.financial-games-library,.financial-game-play-panel{min-width:0;border:1px solid var(--border,rgba(120,160,190,.18));border-radius:16px;background:var(--panel,rgba(15,31,48,.8));overflow:hidden}
+.financial-games-library-title{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:15px;border-bottom:1px solid var(--border,rgba(120,160,190,.14))}
+.financial-games-library-title strong{font-size:13px}
+.financial-games-library-title small{color:var(--muted,#91a9bb);font-size:10px}
+.financial-game-tile{display:flex;align-items:center;gap:10px;width:100%;padding:12px 13px;border:0;border-bottom:1px solid var(--border,rgba(120,160,190,.1));background:transparent;color:inherit;text-align:left;cursor:pointer}
+.financial-game-tile:hover,.financial-game-tile.selected{background:rgba(35,190,210,.08)}
+.financial-game-tile.selected{box-shadow:inset 3px 0 #2bcbd8}
+.financial-game-tile-icon{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;border-radius:10px;background:rgba(42,178,198,.1);font-size:19px}
+.financial-game-tile-copy{display:grid;gap:4px;flex:1;min-width:0}
+.financial-game-tile-copy b{font-size:11px}
+.financial-game-tile-copy small,.financial-game-tile-copy i{font-size:10px;color:var(--muted,#91a9bb);font-style:normal}
+.financial-game-tile-copy i{color:#66d9c6}
+.financial-game-tile-arrow{color:var(--muted,#91a9bb);font-size:21px}
+.financial-game-play-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 20px 15px}
+.financial-game-kicker{font-size:10px;font-weight:800;letter-spacing:.1em;color:#4bd1df}
+.financial-game-play-head h2{margin:8px 0 5px;font-size:23px;letter-spacing:-.04em}
+.financial-game-play-head p{margin:0;color:var(--muted,#91a9bb);font-size:12px;line-height:1.55}
+.financial-game-level-count{flex:0 0 auto;padding:7px 10px;border:1px solid rgba(68,207,177,.2);border-radius:20px;color:#72dfc5;font-size:10px;font-weight:800}
+.financial-game-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 20px 17px}
+.financial-game-level{display:grid;justify-items:start;gap:5px;padding:11px;border:1px solid var(--border,rgba(120,160,190,.18));border-radius:10px;background:rgba(255,255,255,.02);color:inherit;text-align:left;cursor:pointer}
+.financial-game-level:disabled{opacity:.4;cursor:not-allowed}
+.financial-game-level.active{border-color:#2bcbd8;background:rgba(35,190,210,.08)}
+.financial-game-level.completed{border-color:rgba(70,207,167,.38)}
+.financial-game-level>span{font-size:13px;color:#65ddc4;font-weight:800}
+.financial-game-level b{font-size:11px}
+.financial-game-level small{font-size:9px;color:var(--muted,#91a9bb)}
+.financial-game-question-card{margin:0 20px 16px;padding:18px;border:1px solid var(--border,rgba(120,160,190,.17));border-radius:13px;background:rgba(5,17,29,.22)}
+.financial-game-question-meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted,#91a9bb);font-size:9px;font-weight:750;letter-spacing:.06em}
+.financial-game-question-progress{margin-top:10px}
+.financial-game-question-card h3{margin:20px 0 15px;font-size:clamp(16px,2vw,21px);line-height:1.45}
+.financial-game-answer-list{display:grid;gap:8px}
+.financial-game-answer-list button{display:flex;align-items:center;gap:10px;width:100%;padding:11px;border:1px solid var(--border,rgba(120,160,190,.18));border-radius:10px;background:rgba(255,255,255,.025);color:inherit;text-align:left;font-size:12px;line-height:1.45;cursor:pointer}
+.financial-game-answer-list button:hover,.financial-game-answer-list button.chosen{border-color:#32c8d6;background:rgba(35,190,210,.09)}
+.financial-game-answer-list button>span{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border-radius:7px;background:rgba(38,185,204,.12);font-size:10px;font-weight:800;color:#6edce4}
+.financial-game-question-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:17px}
+.financial-game-question-footer small{color:var(--muted,#91a9bb);font-size:10px}
+.financial-game-question-footer button:disabled{opacity:.45;cursor:not-allowed}
+.financial-game-finish{display:grid;justify-items:center;text-align:center;padding:16px 6px}
+.financial-game-finish>span{font-size:36px}
+.financial-game-finish h3{margin:10px 0 5px}
+.financial-game-finish p{margin:4px 0;color:var(--muted,#91a9bb);font-size:12px;line-height:1.5}
+.financial-game-finish>div{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:15px}
+.financial-game-footer-note{padding:0 20px 17px;color:var(--muted,#829bb4);font-size:10px;line-height:1.55}
+@media(max-width:850px){.financial-games-layout{grid-template-columns:1fr}.financial-games-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.financial-games-library-title{grid-column:1/-1}.financial-game-tile{border-right:1px solid var(--border,rgba(120,160,190,.1))}}
+@media(max-width:560px){.financial-games-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.financial-games-summary>div{padding:12px 10px}.financial-games-summary>div>strong{font-size:19px}.financial-games-summary>div>span{font-size:9px}.financial-games-summary .financial-games-progress{grid-column:1/-1}.financial-games-library{grid-template-columns:1fr}.financial-game-play-head{padding:16px 14px 12px}.financial-game-levels{padding:0 14px 14px;gap:6px}.financial-game-level{padding:9px}.financial-game-question-card{margin:0 12px 13px;padding:13px}.financial-game-footer-note{padding:0 13px 14px}.financial-game-question-footer{align-items:flex-start;flex-direction:column}.financial-game-question-footer button{width:100%}}
