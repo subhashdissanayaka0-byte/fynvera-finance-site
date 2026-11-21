@@ -138,7 +138,7 @@ export function FinancialIntelligenceWorkspace({user,profile,portfolio=[],crypto
   </div>;
 }
 
-export function PriceAlertsWorkspace({user,cryptoPrices={},marketQuotes={},showToast=()=>{}}) {
+export function PriceAlertsWorkspace({user,cryptoPrices={},cryptoStatus='connecting',marketQuotes={},marketStatus='connecting',showToast=()=>{}}) {
   const [alerts,setAlerts]=useState([]);
   const [symbol,setSymbol]=useState('BTC');
   const [assetType,setAssetType]=useState('Crypto');
@@ -149,8 +149,10 @@ export function PriceAlertsWorkspace({user,cryptoPrices={},marketQuotes={},showT
   const getPrice=(a)=>{
     const q=a.quote_symbol||a.quoteSymbol||(a.asset_type==='Crypto'?a.symbol+'USDT':a.symbol);
     const ticker=cryptoPrices[q]; const quote=marketQuotes[q]||marketQuotes[q.replace(/[^A-Z0-9]/g,'')];
-    const p=Number(ticker?.lastPrice??quote?.mid??quote?.lastPrice??quote?.bid??0);
-    return p>0?p:null;
+    if(a.asset_type==='Crypto') return cryptoStatus==='live'&&Number(ticker?.lastPrice)>0?Number(ticker.lastPrice):null;
+    const stale=Boolean(quote?.stale||Number(quote?.quoteAgeSeconds||0)>300||quote?.marketState==='closed');
+    const p=Number(quote?.mid??quote?.lastPrice??quote?.bid??0);
+    return !stale&&p>0?p:null;
   };
   const load=async()=>{
     if(supabase&&user&&!user.demo){const {data,error}=await supabase.from('price_alerts').select('*').eq('user_id',user.id).order('created_at',{ascending:false});if(!error)setAlerts(data||[]);}
@@ -167,7 +169,7 @@ export function PriceAlertsWorkspace({user,cryptoPrices={},marketQuotes={},showT
       else saveLocal(key,alerts.map(x=>x.id===a.id?updated:x));
       showToast(a.symbol+' reached your '+a.direction+' price alert at '+getPrice(a)+'.','success');
     });
-  },[alerts,cryptoPrices,marketQuotes]);
+  },[alerts,cryptoPrices,cryptoStatus,marketQuotes,marketStatus]);
   const add=async(e)=>{
     e.preventDefault(); const price=Number(target);
     if(!user){showToast('Sign in to save price alerts.','error');return;}
