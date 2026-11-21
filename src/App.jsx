@@ -1032,7 +1032,7 @@ function PublishArticleWorkspace({ user, onPublish, onDeleteArticle, onOpenArtic
 
 const WORKSPACE_NAV_GROUPS = [
   { label: 'Overview', icon: 'LayoutDashboard', items: ['Dashboard'] },
-  { label: 'My Finances', icon: 'Wallet', items: ['My Portfolio', 'Portfolio Analytics', 'Budget Planner', 'Transactions', 'Savings Goals', 'Debt Tracker', 'Bills & Subscriptions', 'Subscription Manager', 'Financial Achievements', 'Pro Reports'] },
+  { label: 'My Finances', icon: 'Wallet', items: ['My Portfolio', 'Portfolio Analytics', 'Budget Planner', 'Transactions', 'Savings Goals', 'Debt Tracker', 'Bills & Subscriptions', 'Personal Finance', 'Subscription Manager', 'Financial Achievements', 'Pro Reports'] },
   { label: 'Markets & Investing', icon: 'ChartNoAxesCombined', items: ['Watchlist', 'Advanced Watchlist', 'Markets', 'Investment Comparison', 'Economic Calendar', 'Investing', 'Forex', 'Real Estate', 'Commodities'] },
   { label: 'Insights & Learning', icon: 'BookOpenText', items: ['News & Insights', 'Market News Intelligence', 'Finance Learning Center', 'Education', 'FYNORIX Community', 'Regulatory Policy'] },
   { label: 'Smart Tools', icon: 'Sparkles', items: ['Financial Intelligence', 'Price Alerts', 'Tax Estimator', 'Tools & Calculators', 'Import & Export', 'Dashboard Customization'] },
