@@ -2210,7 +2210,7 @@ export default function App() {
     const title = publicAuthorId ? 'Author Profile | FYNORIX' : selectedArticle ? `${selectedArticle.title} | FYNORIX` : workspaceOpen ? `${workspacePage} | FYNORIX Workspace` : activeView === 'Home' ? 'FYNORIX — Understand Money, Build Wealth' : `${activeView} | FYNORIX`;
     const description = String(selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on FYNORIX.`)).replace(/\\s+/g, ' ').slice(0, 300);
     const canonicalUrl = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : publicAuthorId ? `?author=${encodeURIComponent(publicAuthorId)}` : '');
-    const imageUrl = selectedArticle?.image ? new URL(selectedArticle.image, window.location.origin).href : new URL('/images/article-wall-street-rally.jpg', window.location.origin).href;
+    const imageUrl = selectedArticle?.image ? new URL(selectedArticle.image, siteOrigin).href : new URL('/images/article-wall-street-rally.jpg', siteOrigin).href;
     const noIndex = Boolean(workspaceOpen || authMode);
     document.title = title;
     const updateMeta = (selector, value) => { const element = document.querySelector(selector); if (element) element.setAttribute('content', value); };
@@ -2239,10 +2239,10 @@ export default function App() {
       image: imageUrl,
       datePublished: selectedArticle.date ? new Date(selectedArticle.date).toISOString() : undefined,
       dateModified: selectedArticle.updatedAt ? new Date(selectedArticle.updatedAt).toISOString() : undefined,
-      author: { '@type': 'Person', name: selectedArticle.author || 'FYNORIX Editorial', ...(selectedArticle.authorId ? { url: window.location.origin + '/?author=' + encodeURIComponent(selectedArticle.authorId) } : {}) },
-      publisher: { '@type': 'Organization', name: 'FYNORIX', logo: { '@type': 'ImageObject', url: new URL('/favicon.svg', window.location.origin).href } },
+      author: { '@type': 'Person', name: selectedArticle.author || 'FYNORIX Editorial', ...(selectedArticle.authorId ? { url: siteOrigin + '/?author=' + encodeURIComponent(selectedArticle.authorId) } : {}) },
+      publisher: { '@type': 'Organization', name: 'FYNORIX', logo: { '@type': 'ImageObject', url: new URL('/favicon.svg', siteOrigin).href } },
       mainEntityOfPage: canonicalUrl
-    } : { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description, url: canonicalUrl, isPartOf: { '@type': 'WebSite', name: 'FYNORIX', url: window.location.origin } };
+    } : { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description, url: canonicalUrl, isPartOf: { '@type': 'WebSite', name: 'FYNORIX', url: siteOrigin } };
     structuredData.textContent = JSON.stringify(schema, (key, value) => value === undefined ? undefined : value).replace(/</g, '\\u003c');
   }, [activeView, selectedArticle, publicAuthorId, workspaceOpen, workspacePage, authMode]);
 
