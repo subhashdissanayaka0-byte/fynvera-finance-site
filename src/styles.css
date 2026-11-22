@@ -2266,3 +2266,29 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 .financial-game-footer-note{padding:0 20px 17px;color:var(--muted,#829bb4);font-size:10px;line-height:1.55}
 @media(max-width:850px){.financial-games-layout{grid-template-columns:1fr}.financial-games-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.financial-games-library-title{grid-column:1/-1}.financial-game-tile{border-right:1px solid var(--border,rgba(120,160,190,.1))}}
 @media(max-width:560px){.financial-games-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.financial-games-summary>div{padding:12px 10px}.financial-games-summary>div>strong{font-size:19px}.financial-games-summary>div>span{font-size:9px}.financial-games-summary .financial-games-progress{grid-column:1/-1}.financial-games-library{grid-template-columns:1fr}.financial-game-play-head{padding:16px 14px 12px}.financial-game-levels{padding:0 14px 14px;gap:6px}.financial-game-level{padding:9px}.financial-game-question-card{margin:0 12px 13px;padding:13px}.financial-game-footer-note{padding:0 13px 14px}.financial-game-question-footer{align-items:flex-start;flex-direction:column}.financial-game-question-footer button{width:100%}}
+
+
+/* Public article ratings and author profiles */
+.article-rating-panel{margin:26px 0;padding:22px}
+.article-rating-summary{display:flex;align-items:baseline;gap:12px;margin:12px 0 16px}
+.article-rating-summary>strong{font-size:32px;letter-spacing:-1px;color:var(--text-primary,#f5f7fb)}
+.article-rating-summary>strong small{font-size:15px;color:var(--text-muted,#9aa6b2)}
+.article-rating-summary>span,.article-rating-footer small{font-size:13px;color:var(--text-muted,#9aa6b2)}
+.article-rating-options{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:7px}
+.article-rating-choice{min-height:40px;border:1px solid var(--border,#293440);border-radius:10px;background:var(--surface-2,#111b26);color:var(--text-primary,#f5f7fb);font-weight:700;cursor:pointer}
+.article-rating-choice:hover,.article-rating-choice.is-selected{border-color:#23c9d7;background:rgba(35,201,215,.15);color:#6ce6ef}
+.article-rating-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px}
+.author-profile-link{border:0;background:transparent;padding:0;color:inherit;font:inherit;font-weight:750;text-align:left;cursor:pointer}
+.author-profile-link:hover{color:#27c8d5;text-decoration:underline}
+.author-panel-name{font-size:18px}
+.public-author-page{padding-top:28px;padding-bottom:64px}
+.public-author-hero{padding:28px;margin-bottom:22px}
+.public-author-identity{display:flex;align-items:center;gap:18px}
+.public-author-identity h1{margin:5px 0 2px;font-size:clamp(28px,4vw,42px)}
+.public-author-identity p{margin:0;color:var(--text-muted,#9aa6b2)}
+.public-author-bio{max-width:850px;line-height:1.75;margin:20px 0;color:var(--text-secondary,#c3ccd5)}
+.public-author-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.public-author-actions a{text-decoration:none}
+.public-author-stats{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:34px}
+.public-author-articles-heading{margin:26px 0 18px}
+@media(max-width:650px){.article-rating-panel{padding:16px}.article-rating-options{grid-template-columns:repeat(5,minmax(0,1fr))}.article-rating-footer{align-items:flex-start;flex-direction:column}.public-author-hero{padding:18px}.public-author-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.public-author-identity{align-items:flex-start}.public-author-identity h1{font-size:28px}}
