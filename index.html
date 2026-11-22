@@ -12,6 +12,13 @@
       gtag('config', 'G-H1YYVNTLFW');
     </script>
     <meta name="theme-color" content="#061629" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="FYNORIX Editorial" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FYNORIX | Finance, Investing, Live Markets & Money Calculators" />
+    <meta name="twitter:description" content="Make smarter money decisions with market insights, investing guides and free financial calculators." />
+    <meta name="twitter:image" content="https://fynvera-finance-site.vercel.app/images/article-wall-street-rally.jpg" />
     <meta name="description" content="Fynorix offers finance and investing education, live market quotes, crypto prices, stock and forex insights, gold prices, and free financial calculators." />
     <meta name="keywords" content="investing, stock market news, finance news, personal finance, compound interest calculator, retirement calculator, forex, cryptocurrency, wealth building, financial education" />
     <link rel="canonical" href="https://fynvera-finance-site.vercel.app/" />
@@ -27,7 +34,34 @@
     <title>Fynorix | Finance, Investing, Live Markets & Money Calculators</title>
     <!-- Static SEO fallback. The React app also updates the title and description on page changes. -->
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"WebSite","name":"Fynorix","description":"Finance and investing education, live markets, financial news and free calculators","potentialAction":{"@type":"SearchAction","target":"https://fynvera-finance-site.vercel.app/?q={search_term_string}","query-input":"required name=search_term_string"}}
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://fynvera-finance-site.vercel.app/#organization",
+            "name": "FYNORIX",
+            "url": "https://fynvera-finance-site.vercel.app/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://fynvera-finance-site.vercel.app/favicon.svg"
+            },
+            "sameAs": [
+              "https://www.facebook.com/share/1CL171y9Nx/",
+              "https://t.me/+oPeIg0JwB4wwYTll"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://fynvera-finance-site.vercel.app/#website",
+            "name": "FYNORIX",
+            "url": "https://fynvera-finance-site.vercel.app/",
+            "description": "Finance and investing education, market insights, financial news and free calculators.",
+            "publisher": { "@id": "https://fynvera-finance-site.vercel.app/#organization" },
+            "inLanguage": "en"
+          }
+        ]
+      }
     </script>
   </head>
   <body>
