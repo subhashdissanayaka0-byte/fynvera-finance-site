@@ -482,14 +482,14 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
   const [openDropdown, setOpenDropdown] = useState(null);
   const [openMoreCategory, setOpenMoreCategory] = useState(null);
   const mainLinks = [
-    { label: 'Home', navLabel: 'Home', action: onHome },
-    { label: 'News & Insights', navLabel: 'Insights', action: () => onCategory('News & Insights') },
-    { label: 'Investing', navLabel: 'Investing', action: () => onCategory('Investing') },
-    { label: 'Stock Market', navLabel: 'Stocks', action: () => onCategory('Stock Market') },
-    { label: 'Personal Finance', navLabel: 'Money', action: () => onCategory('Personal Finance') },
-    { label: 'Crypto', navLabel: 'Crypto', action: () => onCategory('Crypto') },
-    { label: 'Forex', navLabel: 'Forex', action: () => onCategory('Forex') },
-    { label: 'Business & Economy', navLabel: 'Business', action: () => onCategory('Business & Economy') }
+    { label: 'Home', action: onHome },
+    { label: 'News & Insights', action: () => onCategory('News & Insights') },
+    { label: 'Investing', action: () => onCategory('Investing') },
+    { label: 'Stock Market', action: () => onCategory('Stock Market') },
+    { label: 'Personal Finance', action: () => onCategory('Personal Finance') },
+    { label: 'Crypto', action: () => onCategory('Crypto') },
+    { label: 'Forex', action: () => onCategory('Forex') },
+    { label: 'Business & Economy', action: () => onCategory('Business & Economy') }
   ];
   return (
     <header className="site-header">
@@ -503,7 +503,7 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
             return (
               <div className={`nav-category-wrap ${isOpen ? 'nav-category-open' : ''}`} key={item.label}>
                 <div className="nav-category-controls">
-                  <button className={`nav-link ${activeView === item.label ? 'nav-link-active' : ''}`} onClick={() => { item.action(); setOpenDropdown(null); setMobileOpen(false); }} aria-label={item.label}>{item.navLabel || item.label}</button>
+                  <button className={`nav-link ${activeView === item.label ? 'nav-link-active' : ''}`} onClick={() => { item.action(); setOpenDropdown(null); setMobileOpen(false); }}>{item.label}</button>
                   {hasSubcategories && <button className="nav-dropdown-toggle" aria-label={`Show ${item.label} subcategories`} aria-expanded={isOpen} onClick={() => setOpenDropdown((current) => current === item.label ? null : item.label)}><Icon name="ChevronDown" size={13} /></button>}
                 </div>
                 {hasSubcategories && <div className={`nav-dropdown ${isOpen ? 'nav-dropdown-open' : ''}`}>
@@ -514,11 +514,11 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
             );
           })}
           <div className={`more-nav-wrap ${openDropdown === 'More' ? 'more-nav-open' : ''}`}>
-            <button className="nav-link" onClick={() => setOpenDropdown((current) => current === 'More' ? null : 'More')} aria-expanded={openDropdown === 'More'} aria-label="Explore more categories">Explore <Icon name="ChevronDown" size={13} /></button>
+            <button className="nav-link" onClick={() => setOpenDropdown((current) => current === 'More' ? null : 'More')} aria-expanded={openDropdown === 'More'}>More <Icon name="ChevronDown" size={13} /></button>
             {openDropdown === 'More' && <div className="nav-dropdown more-category-dropdown">{categories.filter((item) => !mainLinks.some((nav) => nav.label === item.name)).map((item) => <div key={item.name} className={`more-subcategory-wrap ${openMoreCategory === item.name ? 'more-subcategory-open' : ''}`}><div className="more-category-row"><button className="more-category-link" onClick={() => { onCategory(item.name); setOpenDropdown(null); setMobileOpen(false); }}>{item.name}<Icon name="ArrowUpRight" size={14} /></button><button className="more-category-toggle" aria-label={`Show ${item.name} subcategories`} aria-expanded={openMoreCategory === item.name} onClick={() => setOpenMoreCategory((current) => current === item.name ? null : item.name)}><Icon name="ChevronRight" size={14}/></button></div><div className="more-subdropdown"><button onClick={() => { onCategory(item.name); setOpenDropdown(null); setOpenMoreCategory(null); setMobileOpen(false); }}>All {item.name}<Icon name="ArrowUpRight" size={14}/></button>{item.subcategories.map((subcategory) => <button key={subcategory} onClick={() => { onCategory(item.name, subcategory); setOpenDropdown(null); setOpenMoreCategory(null); setMobileOpen(false); }}>{subcategory}<Icon name="ChevronRight" size={14}/></button>)}</div></div>)}</div>}
           </div>
           <div className={`more-nav-wrap communities-nav-wrap ${openDropdown === 'Communities' ? 'more-nav-open' : ''}`}>
-            <button className="nav-link communities-nav-trigger" onClick={() => setOpenDropdown((current) => current === 'Communities' ? null : 'Communities')} aria-expanded={openDropdown === 'Communities'} aria-label="Join the FYNORIX community">Community <Icon name="ChevronDown" size={13} /></button>
+            <button className="nav-link communities-nav-trigger" onClick={() => setOpenDropdown((current) => current === 'Communities' ? null : 'Communities')} aria-expanded={openDropdown === 'Communities'}>Join our Communities <Icon name="ChevronDown" size={13} /></button>
             {openDropdown === 'Communities' && <div className="nav-dropdown communities-nav-dropdown">
                <div className="communities-dropdown-heading"><strong>Join the FYNORIX Community</strong><span>Connect, learn and grow together.</span></div>
                <a className="community-link-card" href={siteSocialLinks.facebook} target="_blank" rel="noopener noreferrer" onClick={() => { setOpenDropdown(null); setMobileOpen(false); }}>
