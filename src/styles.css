@@ -2345,3 +2345,19 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
  .public-author-page .news-insights-grid .article-card .article-title-button h3{font-size:11px}
 }
 
+
+
+/* FYNORIX games: keep the level selector readable in dark mode and mobile browsers */
+.financial-game-level-navigation{display:grid;grid-template-columns:minmax(180px,.9fr) minmax(180px,1.1fr);gap:14px;align-items:end;padding:14px 20px 16px;border-bottom:1px solid var(--border,rgba(120,160,190,.14))}
+.financial-game-level-picker{display:grid;gap:7px;min-width:0;color:var(--muted,#a8bbcc);font-size:11px;font-weight:700}
+.financial-game-level-picker select{display:block;width:100%;min-height:44px;padding:10px 38px 10px 12px;border:1px solid rgba(89,151,183,.42);border-radius:10px;background-color:#102235;color:#f2f7fc;font:inherit;font-size:13px;font-weight:700;color-scheme:dark;outline:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);cursor:pointer}
+.financial-game-level-picker select:focus{border-color:#35c9d6;box-shadow:0 0 0 3px rgba(53,201,214,.15)}
+.financial-game-level-picker select option{background:#102235;color:#f2f7fc}
+.financial-game-level-picker select option:disabled{color:#71869a}
+.financial-game-level-progress{min-width:0}
+.financial-game-level-progress>div{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:11px}
+.financial-game-level-progress>div strong{color:var(--text,#eef5fb)}
+.financial-game-level-progress>div span{color:var(--muted,#91a9bb)}
+.financial-game-level-progress>i{display:block;height:6px;border-radius:20px;background:rgba(130,165,190,.16);overflow:hidden}
+.financial-game-level-progress>i em{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#20c6d9,#5be0b6);transition:width .25s}
+@media(max-width:560px){.financial-game-level-navigation{grid-template-columns:1fr;padding:12px 14px 14px;gap:12px}.financial-game-level-picker select{min-height:46px}}
