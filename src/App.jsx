@@ -520,9 +520,15 @@ function Header({ onHome, onCategory, onAuth, onWorkspace, onSearch, user, activ
           <div className={`more-nav-wrap communities-nav-wrap ${openDropdown === 'Communities' ? 'more-nav-open' : ''}`}>
             <button className="nav-link communities-nav-trigger" onClick={() => setOpenDropdown((current) => current === 'Communities' ? null : 'Communities')} aria-expanded={openDropdown === 'Communities'}>Join our Communities <Icon name="ChevronDown" size={13} /></button>
             {openDropdown === 'Communities' && <div className="nav-dropdown communities-nav-dropdown">
-              <a className="nav-dropdown-all" href={siteSocialLinks.facebook} target="_blank" rel="noopener noreferrer" onClick={() => { setOpenDropdown(null); setMobileOpen(false); }}>Facebook Community <Icon name="ArrowUpRight" size={14} /></a>
-              <a className="nav-dropdown-all" href={siteSocialLinks.telegram} target="_blank" rel="noopener noreferrer" onClick={() => { setOpenDropdown(null); setMobileOpen(false); }}>Telegram Community <Icon name="ArrowUpRight" size={14} /></a>
-            </div>}
+               <div className="communities-dropdown-heading"><strong>Be part of FYNORIX</strong><span>Learn, share and grow with our community.</span></div>
+               <a className="community-link-card" href={siteSocialLinks.facebook} target="_blank" rel="noopener noreferrer" onClick={() => { setOpenDropdown(null); setMobileOpen(false); }}>
+                 <span className="community-link-icon community-facebook">f</span><span className="community-link-copy"><strong>Facebook Community</strong><small>Connect with fellow members</small></span><Icon name="ArrowUpRight" size={15} />
+               </a>
+               <a className="community-link-card" href={siteSocialLinks.telegram} target="_blank" rel="noopener noreferrer" onClick={() => { setOpenDropdown(null); setMobileOpen(false); }}>
+                 <span className="community-link-icon community-telegram">↗</span><span className="community-link-copy"><strong>Telegram Community</strong><small>Join the conversation</small></span><Icon name="ArrowUpRight" size={15} />
+               </a>
+               <div className="communities-dropdown-footer">A smarter financial future starts together.</div>
+             </div>}
           </div>
         </nav>
         <div className="header-actions">
