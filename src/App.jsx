@@ -2208,8 +2208,9 @@ export default function App() {
   // Keep search, sharing and crawler metadata in sync with client-side navigation.
   useEffect(() => {
     const title = publicAuthorId ? 'Author Profile | FYNORIX' : selectedArticle ? `${selectedArticle.title} | FYNORIX` : workspaceOpen ? `${workspacePage} | FYNORIX Workspace` : activeView === 'Home' ? 'FYNORIX — Understand Money, Build Wealth' : `${activeView} | FYNORIX`;
-    const description = String(selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on FYNORIX.`)).replace(/\\s+/g, ' ').slice(0, 300);
-    const canonicalUrl = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : publicAuthorId ? `?author=${encodeURIComponent(publicAuthorId)}` : '');
+    const description = String(selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : \`Explore \${activeView.toLowerCase()} insights, practical financial guides, and free calculators on FYNORIX.\`)).replace(/\s+/g, ' ').slice(0, 160);
+    const siteOrigin = new URL(document.querySelector('link[rel="canonical"]')?.href || window.location.origin).origin;
+    const canonicalUrl = siteOrigin + window.location.pathname + (selectedArticle ? \`?article=\${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}\` : publicAuthorId ? \`?author=\${encodeURIComponent(publicAuthorId)}\` : '');
     const imageUrl = selectedArticle?.image ? new URL(selectedArticle.image, siteOrigin).href : new URL('/images/article-wall-street-rally.jpg', siteOrigin).href;
     const noIndex = Boolean(workspaceOpen || authMode);
     document.title = title;
