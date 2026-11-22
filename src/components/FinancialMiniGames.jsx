@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isSupabaseConfigured, supabase } from '../lib/supabase.js';
 
 const GAME_LIBRARY = [
   {id:'money-iq',title:'Money IQ',category:'Financial literacy',icon:'🧠',description:'Build confidence with everyday money concepts.',levels:[
@@ -53,11 +54,11 @@ const GAME_LIBRARY = [
   ]}
 ];
 
-// Expand each game into a 100-stage learning journey. Questions are drawn
+// Expand each game into a 500-stage learning journey. Questions are drawn
 // from that game's topic bank in rotating pairs to reinforce key concepts.
 GAME_LIBRARY.forEach((game) => {
   const questionBank = game.levels.flat();
-  game.levels = Array.from({ length: 100 }, (_, levelIndex) => {
+  game.levels = Array.from({ length: 500 }, (_, levelIndex) => {
     const first = (levelIndex * 2) % questionBank.length;
     const second = (first + 1) % questionBank.length;
     const pair = [questionBank[first], questionBank[second]];
@@ -66,15 +67,16 @@ GAME_LIBRARY.forEach((game) => {
 });
 
 const getLevelStage = (level) => {
-  if (level < 10) return 'Starter';
-  if (level < 30) return 'Builder';
-  if (level < 60) return 'Skilled';
+  if (level < 50) return 'Starter';
+  if (level < 150) return 'Builder';
+  if (level < 300) return 'Skilled';
   return 'Expert';
 };
 
 export default function FinancialMiniGames({ user }) {
   const storageKey = 'fynorix-game-progress-' + (user?.id || 'member');
   const [progress, setProgress] = useState(() => { try { return JSON.parse(window.localStorage.getItem(storageKey) || '{}'); } catch { return {}; } });
+  const [progressReady, setProgressReady] = useState(false);
   const [selectedGame, setSelectedGame] = useState(GAME_LIBRARY[0].id);
   const [selectedLevel, setSelectedLevel] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -88,7 +90,40 @@ export default function FinancialMiniGames({ user }) {
   const totalLevels = GAME_LIBRARY.reduce((sum,item)=>sum+item.levels.length,0);
   const completed = GAME_LIBRARY.reduce((sum,item)=>sum+(progress[item.id]||[]).length,0);
   const unlocked = (level) => level === 0 || done.includes(level - 1);
-  useEffect(() => { try { window.localStorage.setItem(storageKey, JSON.stringify(progress)); } catch {} }, [storageKey, progress]);
+  useEffect(() => {
+    let active = true;
+    async function loadProgress() {
+      let next = {};
+      try { next = JSON.parse(window.localStorage.getItem(storageKey) || '{}'); } catch {}
+      if (isSupabaseConfigured && supabase && user?.id && !user?.demo) {
+        const { data, error } = await supabase.from('financial_game_progress').select('game_id,completed_levels').eq('user_id', user.id);
+        if (!error && data) {
+          data.forEach((row) => {
+            const remote = Array.isArray(row.completed_levels) ? row.completed_levels.filter((n) => Number.isInteger(n) && n >= 0 && n < 500) : [];
+            next[row.game_id] = [...new Set([...(next[row.game_id] || []), ...remote])].sort((a,b)=>a-b);
+          });
+        }
+      }
+      if (active) { setProgress(next); setProgressReady(true); }
+    }
+    setProgressReady(false);
+    loadProgress();
+    return () => { active = false; };
+  }, [storageKey, user?.id, user?.demo]);
+  useEffect(() => {
+    if (!progressReady) return;
+    try { window.localStorage.setItem(storageKey, JSON.stringify(progress)); } catch {}
+    if (isSupabaseConfigured && supabase && user?.id && !user?.demo) {
+      const rows = GAME_LIBRARY.map((item) => ({
+        user_id: user.id,
+        game_id: item.id,
+        completed_levels: (progress[item.id] || []).filter((n) => Number.isInteger(n) && n >= 0 && n < 500),
+        updated_at: new Date().toISOString()
+      }));
+      supabase.from('financial_game_progress').upsert(rows, { onConflict: 'user_id,game_id' })
+        .then(({ error }) => { if (error) console.warn('Could not sync financial game progress:', error.message); });
+    }
+  }, [progress, progressReady, storageKey, user?.id, user?.demo]);
   const selectGame = (id) => { setSelectedGame(id); setSelectedLevel(0); setQuestionIndex(0); setChoice(null); setAnswers([]); setFinished(false); };
   const selectLevel = (level) => { if (!unlocked(level)) return; setSelectedLevel(level); setQuestionIndex(0); setChoice(null); setAnswers([]); setFinished(false); };
   const nextQuestion = () => {
@@ -105,14 +140,21 @@ export default function FinancialMiniGames({ user }) {
     <div className="workspace-welcome"><div><div className="eyebrow"><span/> LEARN THROUGH PLAY</div><h1>Financial Games</h1><p>Build real-world money knowledge with short challenges, unlock new levels and track your learning progress.</p></div><span className="data-pill"><span className="privacy-dot"/> {completed}/{totalLevels} LEVELS COMPLETE</span></div>
     <div className="financial-games-summary"><div><strong>10</strong><span>Mini games</span></div><div><strong>{totalLevels}</strong><span>Levels to explore</span></div><div><strong>{completed}</strong><span>Levels completed</span></div><div className="financial-games-progress"><div><span>Overall progress</span><b>{Math.round(completed/totalLevels*100)}%</b></div><i><em style={{width:(completed/totalLevels*100)+'%'}}/></i></div></div>
     <div className="financial-games-layout">
-      <aside className="financial-games-library"><div className="financial-games-library-title"><strong>Choose a game</strong><small>10 learning challenges</small></div>{GAME_LIBRARY.map((item,index)=><button type="button" key={item.id} className={'financial-game-tile '+(selectedGame===item.id?'selected':'')} onClick={()=>selectGame(item.id)}><span className="financial-game-tile-icon">{item.icon}</span><span className="financial-game-tile-copy"><b>{String(index+1).padStart(2,'0')} · {item.title}</b><small>{item.category}</small><i>{(progress[item.id]||[]).length}/100 levels complete</i></span><span className="financial-game-tile-arrow">›</span></button>)}</aside>
+      <aside className="financial-games-library"><div className="financial-games-library-title"><strong>Choose a game</strong><small>10 learning challenges</small></div>{GAME_LIBRARY.map((item,index)=><button type="button" key={item.id} className={'financial-game-tile '+(selectedGame===item.id?'selected':'')} onClick={()=>selectGame(item.id)}><span className="financial-game-tile-icon">{item.icon}</span><span className="financial-game-tile-copy"><b>{String(index+1).padStart(2,'0')} · {item.title}</b><small>{item.category}</small><i>{(progress[item.id]||[]).length}/500 levels complete</i></span><span className="financial-game-tile-arrow">›</span></button>)}</aside>
       <main className="financial-game-play-panel">
-        <div className="financial-game-play-head"><div><span className="financial-game-kicker">{game.icon} {game.category.toUpperCase()}</span><h2>{game.title}</h2><p>{game.description}</p></div><span className="financial-game-level-count">{done.length}/100 done</span></div>
-        <div className="financial-game-levels" aria-label="Game levels">{game.levels.map((_,index)=><button type="button" key={index} disabled={!unlocked(index)} className={'financial-game-level '+(selectedLevel===index?'active ':'')+(done.includes(index)?'completed':'')} onClick={()=>selectLevel(index)}><span>{done.includes(index)?'✓':unlocked(index)?'0'+(index+1):'🔒'}</span><b>Level {index+1}</b><small>{getLevelStage(index)}</small></button>)}</div>
-        <div className="financial-game-question-card">
-          {!finished ? <><div className="financial-game-question-meta"><span>LEVEL {selectedLevel+1} · QUESTION {questionIndex+1}/{questions.length}</span><span>{answers.filter(Boolean).length} correct so far</span></div><div className="financial-game-question-progress"><i style={{width:((questionIndex+1)/questions.length*100)+'%'}}/></div><h3>{question.q}</h3><div className="financial-game-answer-list">{question.o.map((option,index)=><button type="button" key={option} className={choice===index?'chosen':''} onClick={()=>setChoice(index)}><span>{String.fromCharCode(65+index)}</span>{option}</button>)}</div><div className="financial-game-question-footer"><small>Choose the best answer to continue.</small><button type="button" className="button button-primary" disabled={choice===null} onClick={nextQuestion}>{questionIndex===questions.length-1?'Finish level':'Check & continue'} →</button></div></> : <div className="financial-game-finish"><span>{passed?'🏆':'💡'}</span><h3>{passed?'Level complete!':'Good try — practise makes progress.'}</h3><p>You answered {answers.filter(Boolean).length} of {questions.length} correctly.</p><p>{passed?'This level is saved. The next level is now unlocked.':'You need at least one correct answer to pass this level.'}</p><div><button type="button" className="button button-primary" onClick={restart}>Play level again</button>{passed&&selectedLevel<99&&<button type="button" className="button button-soft" onClick={()=>selectLevel(selectedLevel+1)}>Next level →</button>}{passed&&selectedLevel===99&&<button type="button" className="button button-soft" onClick={()=>selectGame(GAME_LIBRARY[(GAME_LIBRARY.findIndex((item)=>item.id===game.id)+1)%GAME_LIBRARY.length].id)}>Explore another game →</button>}</div></div>}
+        <div className="financial-game-play-head"><div><span className="financial-game-kicker">{game.icon} {game.category.toUpperCase()}</span><h2>{game.title}</h2><p>{game.description}</p></div><span className="financial-game-level-count">{done.length}/500 done</span></div>
+        <div className="financial-game-level-navigation">
+          <label className="financial-game-level-picker">Choose an unlocked level
+            <select value={selectedLevel} onChange={(event)=>selectLevel(Number(event.target.value))}>
+              {game.levels.map((_,index)=><option key={index} value={index} disabled={!unlocked(index)}>{'Level '+(index+1)+' · '+(done.includes(index)?'Completed':unlocked(index)?getLevelStage(index):'Locked')}</option>)}
+            </select>
+          </label>
+          <div className="financial-game-level-progress"><div><strong>Level {selectedLevel+1} of 500</strong><span>{done.length} completed</span></div><i><em style={{width:(done.length/500*100)+'%'}}/></i></div>
         </div>
-        <div className="financial-game-footer-note">Progress is saved in this browser for this signed-in profile. Educational only — no real money, deposits, prizes or trading.</div>
+        <div className="financial-game-question-card">
+          {!finished ? <><div className="financial-game-question-meta"><span>LEVEL {selectedLevel+1} · QUESTION {questionIndex+1}/{questions.length}</span><span>{answers.filter(Boolean).length} correct so far</span></div><div className="financial-game-question-progress"><i style={{width:((questionIndex+1)/questions.length*100)+'%'}}/></div><h3>{question.q}</h3><div className="financial-game-answer-list">{question.o.map((option,index)=><button type="button" key={option} className={choice===index?'chosen':''} onClick={()=>setChoice(index)}><span>{String.fromCharCode(65+index)}</span>{option}</button>)}</div><div className="financial-game-question-footer"><small>Choose the best answer to continue.</small><button type="button" className="button button-primary" disabled={choice===null} onClick={nextQuestion}>{questionIndex===questions.length-1?'Finish level':'Check & continue'} →</button></div></> : <div className="financial-game-finish"><span>{passed?'🏆':'💡'}</span><h3>{passed?'Level complete!':'Good try — practise makes progress.'}</h3><p>You answered {answers.filter(Boolean).length} of {questions.length} correctly.</p><p>{passed?'This level is saved. The next level is now unlocked.':'You need at least one correct answer to pass this level.'}</p><div><button type="button" className="button button-primary" onClick={restart}>Play level again</button>{passed&&selectedLevel<499&&<button type="button" className="button button-soft" onClick={()=>selectLevel(selectedLevel+1)}>Next level →</button>}{passed&&selectedLevel===499&&<button type="button" className="button button-soft" onClick={()=>selectGame(GAME_LIBRARY[(GAME_LIBRARY.findIndex((item)=>item.id===game.id)+1)%GAME_LIBRARY.length].id)}>Explore another game →</button>}</div></div>}
+        </div>
+        <div className="financial-game-footer-note">Progress saves to your FYNORIX account and this browser when available. Educational only — no real money, deposits, prizes or trading.</div>
       </main>
     </div>
   </section>;
