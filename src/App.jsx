@@ -625,7 +625,7 @@ function ArticleCard({ article, onOpen, featured = false, onToggleWatch, watched
   );
 }
 
-function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, onShare, user, onAuth, showToast, cryptoPrices = {}, cryptoStatus = 'connecting', marketQuotes = {}, marketCatalog = [], marketStatus = 'connecting', marketFetchedAt = null }) {
+function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, onShare, user, onAuth, onOpenAuthor, showToast, cryptoPrices = {}, cryptoStatus = 'connecting', marketQuotes = {}, marketCatalog = [], marketStatus = 'connecting', marketFetchedAt = null }) {
   const articleText = Array.isArray(article.body) ? article.body : String(article.body || '').split('\n\n').filter(Boolean);
   return (
     <main className="article-detail page-wrap fade-in">
@@ -636,15 +636,16 @@ function ArticleDetail({ article, onBack, onCategory, onToggleWatch, watched, on
           <span className="category-label">{article.category.toUpperCase()}</span>
           <h1>{article.title}</h1>
           <p className="article-lead">{article.excerpt}</p>
-          <div className="article-byline"><div className="author-avatar">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><strong>{article.author || 'Fynorix Editorial'}</strong><small>{article.authorRole || 'Finance Contributor'}{articleWasEdited(article) ? ' · EDITED' : ''}</small></div><span className="byline-separator" /><span><Icon name="CalendarDays" size={15} />{formatDate(article.date)}</span><span><Icon name="Clock3" size={15} />{article.readTime || 5} min read</span></div>
+          <div className="article-byline"><div className="author-avatar">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><button type="button" className="author-profile-link" onClick={() => article.authorId && onOpenAuthor?.(article.authorId)}>{article.author || 'Fynorix Editorial'}</button><small>{article.authorRole || 'Finance Contributor'}{articleWasEdited(article) ? ' · EDITED' : ''}</small></div><span className="byline-separator" /><span><Icon name="CalendarDays" size={15} />{formatDate(article.date)}</span><span><Icon name="Clock3" size={15} />{article.readTime || 5} min read</span></div>
           {article.authorId && <div className="article-top-follow"><FollowAuthorButton targetId={article.authorId} user={user} authorName={article.author} onAuth={onAuth} showToast={showToast}/></div>}
           <div className="article-detail-image"><ImageSlot id={article.imageId || 'IMG-ARTICLE-CUSTOM'} src={article.image} alt={article.imageAltText || article.title} />{article.imageDescription && <p className="article-image-caption">{article.imageDescription}</p>}</div>
           <div className="article-toolbar"><span><Icon name="BookOpenText" size={16} /> Reading guide</span><div><button className={`button button-soft button-small ${watched ? 'button-soft-active' : ''}`} onClick={() => onToggleWatch(article)}><Icon name={watched ? 'BookmarkCheck' : 'Bookmark'} size={15} />{watched ? 'Saved' : 'Save article'}</button><button className="button button-soft button-small" onClick={() => onShare(article)}><Icon name="Share2" size={15} />Share</button></div></div>
           <div className="article-body-copy">{articleText.map((paragraph, index) => <React.Fragment key={`${article.id}-${index}`}><p>{paragraph}</p>{index === 1 && <AdSlot id="ADSLOT-ARTICLE-001" format="article"/>}</React.Fragment>)}<div className="disclaimer-block"><Icon name="ShieldCheck" size={19} /><p><strong>Important note</strong><br />This content is for general education only. It is not personal financial, investment, tax or legal advice. Market values and examples may be illustrative.</p></div></div>
           <div className="keyword-tags">{(article.keywords || []).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>#{keyword.replaceAll(' ', '')}</button>)}</div>
+          <ArticleRating article={article} user={user} onAuth={onAuth} showToast={showToast}/>
           <ArticleCommunity article={article} user={user} onAuth={onAuth} showToast={showToast}/>
         </article>
-        <aside className="article-aside"><MarketPanel compact cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><h3>{article.author || 'Fynorix Editorial'}</h3><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p>{article.authorId && <PublicAuthorLinks authorId={article.authorId}/>}<button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
+        <aside className="article-aside"><MarketPanel compact cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt} onOpenMarkets={() => onCategory('Stock Market')} /><div className="panel author-panel"><div className="author-avatar author-avatar-large">{article.authorAvatar ? <img src={article.authorAvatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(event) => { event.currentTarget.style.display = 'none'; }}/> : (article.author || 'F').slice(0, 1)}</div><div><button type="button" className="author-profile-link author-panel-name" onClick={() => article.authorId && onOpenAuthor?.(article.authorId)}>{article.author || 'Fynorix Editorial'}</button><p>{article.authorRole || 'Finance Contributor'}</p></div><p>Clear, practical finance insights to help you make more informed money decisions.</p>{article.authorId && <PublicAuthorLinks authorId={article.authorId}/>}<button className="button button-outline button-block" onClick={() => onCategory(article.category)}>More in {article.category}<Icon name="ArrowRight" size={15} /></button></div><div className="panel article-aside-tags"><h3><Icon name="Tags" size={17} /> In this article</h3>{(article.keywords || []).slice(0, 5).map((keyword) => <button key={keyword} onClick={() => onCategory(article.category)}>{keyword}</button>)}</div></aside>
       </div>
     </main>
   );
@@ -1561,6 +1562,103 @@ function PublicAuthorLinks({ authorId }) {
   return <div className="public-author-info">{profile.bio && <p>{profile.bio}</p>}{links.length > 0 && <div className="public-author-links" aria-label="Author social links">{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noopener noreferrer">{label}<Icon name="ArrowUpRight" size={12}/></a>)}</div>}</div>;
 }
 
+
+function ArticleRating({ article, user, onAuth, showToast }) {
+  const [stats, setStats] = useState({ average: 0, count: 0 });
+  const [myRating, setMyRating] = useState(0);
+  const [choice, setChoice] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const validRemote = Boolean(supabase && isUuid(article.id));
+  const refresh = async () => {
+    if (!validRemote) return;
+    const [summary, mine] = await Promise.all([
+      supabase.rpc('get_article_rating_stats', { p_article_id: article.id }),
+      user && !user.demo ? supabase.from('article_ratings').select('rating').eq('article_id', article.id).eq('user_id', user.id).maybeSingle() : Promise.resolve({ data: null, error: null })
+    ]);
+    const row = Array.isArray(summary.data) ? summary.data[0] : summary.data;
+    if (!summary.error && row) setStats({ average: Number(row.average_rating) || 0, count: Number(row.rating_count) || 0 });
+    if (!mine.error) { const value = Number(mine.data?.rating) || 0; setMyRating(value); setChoice(value); }
+  };
+  useEffect(() => { if (validRemote) refresh().catch(() => {}); }, [article.id, user?.id]);
+  const submit = async () => {
+    if (!user) { onAuth('signup'); showToast('Sign in to rate this article.', 'info'); return; }
+    if (user.demo || !validRemote) { showToast('Article ratings are available for published articles with a verified account.', 'info'); return; }
+    if (!choice || busy) return;
+    setBusy(true);
+    const { error } = await supabase.from('article_ratings').upsert(
+      { article_id: article.id, user_id: user.id, rating: choice, updated_at: new Date().toISOString() },
+      { onConflict: 'article_id,user_id' }
+    );
+    setBusy(false);
+    if (error) { showToast(error.message || 'Could not save your rating.', 'error'); return; }
+    setMyRating(choice);
+    await refresh();
+    showToast(myRating ? 'Your rating was updated.' : 'Thanks for rating this article!', 'success');
+  };
+  return <section className="article-rating-panel panel" aria-label="Rate this article">
+    <div className="panel-heading"><div><h3>Rate this article</h3><p>How helpful was this article? Give it a score from 1 to 10.</p></div><span className="heading-icon"><Icon name="Star" size={19}/></span></div>
+    <div className="article-rating-summary"><strong>{stats.count ? stats.average.toFixed(1) : '—'}<small> / 10</small></strong><span>{stats.count.toLocaleString('en-US')} {stats.count === 1 ? 'rating' : 'ratings'}</span></div>
+    <div className="article-rating-options" role="group" aria-label="Choose a rating from 1 to 10">
+      {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <button key={value} type="button" className={choice === value ? 'article-rating-choice is-selected' : 'article-rating-choice'} aria-pressed={choice === value} onClick={() => setChoice(value)}>{value}</button>)}
+    </div>
+    <div className="article-rating-footer"><small>{myRating ? 'Your rating: ' + myRating + '/10 · You can change it anytime.' : user ? 'Your rating helps other readers.' : 'Sign in to submit a rating.'}</small><button type="button" className="button button-primary button-small" disabled={!choice || busy || choice === myRating} onClick={submit}>{busy ? 'Saving…' : myRating ? 'Update rating' : 'Submit rating'}</button></div>
+  </section>;
+}
+
+function PublicAuthorPage({ authorId, user, onAuth, onOpenArticle, onBack, showToast }) {
+  const [profile, setProfile] = useState(null);
+  const [authorArticles, setAuthorArticles] = useState([]);
+  const [stats, setStats] = useState({ followers: 0, following: 0, likes_received: 0, published_articles: 0, average_rating: 0, rating_count: 0 });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!supabase || !isUuid(authorId)) { setLoading(false); return; }
+      const [profileResult, articleResult, socialResult, ratingResult] = await Promise.all([
+        supabase.from('author_profiles').select('user_id,username,display_name,bio,avatar_url,x_url,tiktok_url,facebook_url,telegram_url').eq('user_id', authorId).maybeSingle(),
+        supabase.from('articles').select('id,title,summary,article_body,category,subcategory,seo_keywords,image_url,image_alt_text,image_description,created_at,updated_at,user_id,status,content_type').eq('user_id', authorId).eq('status', 'published').order('created_at', { ascending: false }).limit(200),
+        supabase.rpc('author_social_counts', { p_author_id: authorId }),
+        supabase.rpc('get_author_rating_stats', { p_author_id: authorId })
+      ]);
+      if (!active) return;
+      if (profileResult.error) showToast('Could not load this author profile.', 'error');
+      setProfile(profileResult.data || null);
+      const rows = articleResult.data || [];
+      setAuthorArticles(rows.map((row) => ({ ...mapDatabaseArticle(row), authorId, author: profileResult.data?.display_name || profileResult.data?.username || 'FYNORIX Author', authorAvatar: profileResult.data?.avatar_url || '' })));
+      const social = Array.isArray(socialResult.data) ? socialResult.data[0] : socialResult.data;
+      const ratings = Array.isArray(ratingResult.data) ? ratingResult.data[0] : ratingResult.data;
+      setStats({
+        followers: Number(social?.followers) || 0,
+        following: Number(social?.following) || 0,
+        likes_received: Number(social?.likes_received) || 0,
+        published_articles: rows.length,
+        average_rating: Number(ratings?.average_rating) || 0,
+        rating_count: Number(ratings?.rating_count) || 0
+      });
+      setLoading(false);
+    };
+    load().catch(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [authorId]);
+  if (loading) return <main className="page-wrap public-author-page"><button className="back-link" onClick={onBack}><Icon name="ArrowLeft" size={16}/> Back</button><div className="panel"><p>Loading author profile…</p></div></main>;
+  if (!profile) return <main className="page-wrap public-author-page"><button className="back-link" onClick={onBack}><Icon name="ArrowLeft" size={16}/> Back</button><div className="empty-state"><Icon name="UserRound" size={28}/><strong>Author profile not found</strong><span>This profile may not be available.</span></div></main>;
+  const displayName = profile.display_name || profile.username || 'FYNORIX Author';
+  const socialLinks = [['X', profile.x_url], ['TikTok', profile.tiktok_url], ['Facebook', profile.facebook_url], ['Telegram', profile.telegram_url]].filter(([, url]) => { try { return ['http:', 'https:'].includes(new URL(url).protocol); } catch { return false; } });
+  return <main className="page-wrap public-author-page fade-in">
+    <button className="back-link" onClick={onBack}><Icon name="ArrowLeft" size={16}/> Back to articles</button>
+    <section className="public-author-hero panel">
+      <div className="public-author-identity"><div className="author-avatar author-avatar-large">{profile.avatar_url ? <img src={profile.avatar_url} alt="" referrerPolicy="no-referrer"/> : displayName.slice(0,1).toUpperCase()}</div><div><span className="eyebrow"><span/> PUBLIC AUTHOR PROFILE</span><h1>{displayName}</h1><p>@{profile.username || 'fynorix-author'}</p></div></div>
+      <p className="public-author-bio">{profile.bio || 'FYNORIX community author sharing educational finance content.'}</p>
+      <div className="public-author-actions"><FollowAuthorButton targetId={authorId} user={user} authorName={displayName} onAuth={onAuth} showToast={showToast}/>{socialLinks.map(([label,url]) => <a key={label} className="button button-soft button-small" href={url} target="_blank" rel="noopener noreferrer">{label}<Icon name="ArrowUpRight" size={13}/></a>)}</div>
+    </section>
+    <div className="author-profile-stats-grid public-author-stats">
+      {[['Articles', stats.published_articles, 'FileText'], ['Followers', stats.followers, 'Users'], ['Following', stats.following, 'UserRoundCheck'], ['Likes received', stats.likes_received, 'Heart'], ['Average rating', stats.rating_count ? stats.average_rating.toFixed(1) + '/10' : '—', 'Star'], ['Ratings received', stats.rating_count, 'MessageCircle']].map(([label,value,icon]) => <div className="summary-card" key={label}><div className="summary-card-top"><span>{label.toUpperCase()}</span><span className="summary-icon"><Icon name={icon} size={18}/></span></div><strong>{value}</strong></div>)}
+    </div>
+    <div className="section-title-row public-author-articles-heading"><div><div className="eyebrow"><span/> AUTHOR LIBRARY</div><h2>All articles by {displayName}</h2><p>Published articles from this author in one place.</p></div><span className="data-pill">{authorArticles.length} ARTICLES</span></div>
+    {authorArticles.length ? <div className="news-insights-grid">{authorArticles.map((article) => <ArticleCard key={article.id} article={article} onOpen={onOpenArticle} onToggleWatch={() => {}} watched={false}/>)}</div> : <div className="empty-state"><Icon name="BookOpenText" size={26}/><strong>No published articles yet</strong><span>New public articles from this author will appear here.</span></div>}
+  </main>;
+}
+
 function ArticleCommunity({ article, user, onAuth, showToast }) {
   const localKey = `community-${article.id}`;
   const [reaction, setReaction] = useState(null);
@@ -1775,6 +1873,7 @@ export default function App() {
   const [activeView, setActiveView] = useState(initialRoute.view || 'Home');
   const [selectedSubcategory, setSelectedSubcategory] = useState(initialRoute.subcategory || 'All');
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [publicAuthorId, setPublicAuthorId] = useState(() => typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('author') : null);
   const [workspaceOpen, setWorkspaceOpen] = useState(Boolean(initialRoute.workspace));
   const [workspacePage, setWorkspacePage] = useState(initialRoute.workspacePage || 'Dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -1813,10 +1912,10 @@ export default function App() {
   const [marketFetchedAt, setMarketFetchedAt] = useState(null);
 
   const showToast = (message, type = 'info') => { setToast({ message, type, id: Date.now() }); window.setTimeout(() => setToast((value) => value?.message === message ? null : value), 3800); };
-  const navigateCategory = (name, subcategory = 'All') => { setSelectedArticle(null); setWorkspaceOpen(false); setSelectedSubcategory(subcategory || 'All'); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const navigateCategory = (name, subcategory = 'All') => { setPublicAuthorId(null); setSelectedArticle(null); setWorkspaceOpen(false); setSelectedSubcategory(subcategory || 'All'); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const openWorkspace = (userOverride = null) => {
     if (!(userOverride || currentUser)) { setAuthMode('signup'); showToast('Create a free account or sign in to access your private workspace.', 'info'); return; }
-    setWorkspaceOpen(true); setWorkspacePage('Dashboard'); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    setWorkspaceOpen(true); setWorkspacePage('Dashboard'); setPublicAuthorId(null); setSelectedArticle(null); setActiveView('Workspace'); window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const openCalculatorLibrary = () => {
     if (!currentUser) { setAuthMode('signup'); showToast('Create a free account to open workspace tools.', 'info'); return; }
@@ -1828,7 +1927,8 @@ export default function App() {
     setWorkspacePage(page); setWorkspaceOpen(true); setSelectedArticle(null); setActiveView('Workspace');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const openArticle = (article) => { setSelectedArticle(article); setWorkspaceOpen(false); setActiveView('Article'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const openArticle = (article) => { setPublicAuthorId(null); setSelectedArticle(article); setWorkspaceOpen(false); setActiveView('Article'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const openAuthor = (authorId) => { if (!authorId || !isUuid(authorId)) return; setPublicAuthorId(authorId); setSelectedArticle(null); setWorkspaceOpen(false); setActiveView('Author'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const openCalculator = (id) => { setCalculatorId(id || calculatorList[0].id); };
   const openAuth = (mode) => { if (mode === 'logout') { handleLogout(); return; } setAuthMode(mode); };
 
@@ -2080,13 +2180,14 @@ export default function App() {
       const search = new URLSearchParams(window.location.search);
       // Do not erase an incoming shared-article URL while the article list is still loading.
       if (search.has('article') && !selectedArticle) return;
+      if (publicAuthorId) search.set('author', publicAuthorId); else search.delete('author');
       if (selectedArticle) search.set('article', selectedArticle.slug || selectedArticle.id);
       else search.delete('article');
       const nextUrl = `${window.location.pathname}${search.toString() ? `?${search.toString()}` : ''}${nextHash}`;
       if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== nextUrl) window.history.replaceState(window.history.state, '', nextUrl);
     };
     syncRoute();
-  }, [activeView, selectedSubcategory, workspaceOpen, workspacePage, calculatorId, selectedArticle]);
+  }, [activeView, selectedSubcategory, workspaceOpen, workspacePage, calculatorId, selectedArticle, publicAuthorId]);
 
   // Open the article passed in a share URL, once the current article list is available.
   useEffect(() => {
@@ -2098,8 +2199,8 @@ export default function App() {
 
   // Dynamic page titles, descriptions and social previews improve context on client-side navigation.
   useEffect(() => {
-    const title = selectedArticle ? `${selectedArticle.title} | Fynorix` : workspaceOpen ? `${workspacePage} | Fynorix Workspace` : activeView === 'Home' ? 'Fynorix — Understand Money, Build Wealth' : `${activeView} | Fynorix`;
-    const description = selectedArticle?.excerpt || `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on Fynorix.`;
+    const title = publicAuthorId ? `Author Profile | Fynorix` : selectedArticle ? `${selectedArticle.title} | Fynorix` : workspaceOpen ? `${workspacePage} | Fynorix Workspace` : activeView === 'Home' ? 'Fynorix — Understand Money, Build Wealth' : `${activeView} | Fynorix`;
+    const description = selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on Fynorix.`);
     document.title = title;
     const updateMeta = (selector, value) => { const element = document.querySelector(selector); if (element) element.setAttribute('content', value); };
     updateMeta('meta[name="description"]', description);
@@ -2108,7 +2209,7 @@ export default function App() {
     updateMeta('meta[name="keywords"]', selectedArticle?.keywords?.join(', ') || 'investing, stock market news, finance news, personal finance, forex, cryptocurrency, wealth building');
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-    canonical.href = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : '');
+    canonical.href = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : publicAuthorId ? `?author=${encodeURIComponent(publicAuthorId)}` : '');
   }, [activeView, selectedArticle, workspaceOpen, workspacePage]);
 
   async function handleAuthSubmit({ mode, name, email, password }) {
@@ -2457,7 +2558,8 @@ export default function App() {
     <div className="app-shell">
       <Header onHome={() => navigateCategory('Home')} onCategory={navigateCategory} onAuth={openAuth} onWorkspace={openWorkspace} onSearch={() => setSearchOpen(true)} user={currentUser} activeView={activeView}/>
       {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={openAvatarCrop} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onDeleteArticle={deleteArticle} onCalculator={openCalculator} onAuth={openAuth} onRegisterPasskey={handlePasskeyRegister} passkeyBusy={authBusy} onCategory={navigateCategory} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
-      : selectedArticle ? <ArticleDetail key={selectedArticle.id} article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle} user={currentUser} onAuth={openAuth} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/>
+      : publicAuthorId ? <PublicAuthorPage key={publicAuthorId} authorId={publicAuthorId} user={currentUser} onAuth={openAuth} onOpenArticle={openArticle} onBack={() => navigateCategory('Home')} showToast={showToast}/>
+      : selectedArticle ? <ArticleDetail key={selectedArticle.id} article={selectedArticle} onBack={() => navigateCategory('Home')} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watched={watchlist.includes(selectedArticle.id)} onShare={shareArticle} user={currentUser} onAuth={openAuth} onOpenAuthor={openAuthor} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/>
       : activeView === 'News & Insights' ? <NewsInsightsPage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist}/>
       : activeView === 'Home' ? <HomePage articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onWorkspace={openWorkspace} onCalculator={openCalculator} onAllCalculators={openCalculatorLibrary} onToggleWatch={toggleArticleWatch} watchlist={watchlist} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/>
       : currentCategory ? <CategoryPage key={activeView} category={activeView} initialSubcategory={selectedSubcategory} articles={articles} onOpenArticle={openArticle} onCategory={navigateCategory} onToggleWatch={toggleArticleWatch} watchlist={watchlist} onWorkspace={openWorkspace} onCalculator={openCalculator} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus}/>
