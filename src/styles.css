@@ -2317,3 +2317,31 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
  .article-rating-panel{padding:13px}
  .article-rating-choice{min-height:32px}
 }
+
+/* Smaller public article cards and rating box */
+.article-rating-panel{padding:12px 14px;margin:13px 0;border-radius:11px}
+.article-rating-panel h3,.article-rating-panel h4{font-size:14px;margin:0 0 5px}
+.article-rating-summary{gap:8px;margin:6px 0 9px}
+.article-rating-summary>strong{font-size:22px}
+.article-rating-summary>strong small{font-size:12px}
+.article-rating-summary>span,.article-rating-footer small{font-size:11px}
+.article-rating-options{gap:5px}
+.article-rating-choice{min-height:29px;border-radius:7px;font-size:11px}
+.article-rating-footer{margin-top:8px;gap:8px}
+.public-author-page .news-insights-grid .article-card{border-radius:12px}
+.public-author-page .news-insights-grid .article-card-image-button{height:112px}
+.public-author-page .news-insights-grid .article-card-body{padding:10px 11px 9px}
+.public-author-page .news-insights-grid .article-card .article-title-button h3{margin:7px 0 5px;font-size:12px;line-height:1.4}
+.public-author-page .news-insights-grid .article-card-body>p{-webkit-line-clamp:2;margin-bottom:9px;font-size:9px;line-height:1.5}
+.public-author-page .news-insights-grid .article-card-footer{padding-top:7px}
+.public-author-page .news-insights-grid .article-card-footer .author-initial{width:18px;height:18px}
+.public-author-page .news-insights-grid .article-card-footer .author-mini{font-size:7px}
+.public-author-page .news-insights-grid .article-actions .icon-button{width:29px;height:29px}
+@media(max-width:650px){
+ .article-rating-panel{padding:10px 11px;margin:11px 0}
+ .article-rating-choice{min-height:28px;font-size:10px}
+ .public-author-page .news-insights-grid .article-card-image-button{height:96px}
+ .public-author-page .news-insights-grid .article-card-body{padding:9px}
+ .public-author-page .news-insights-grid .article-card .article-title-button h3{font-size:11px}
+}
+
