@@ -2179,7 +2179,7 @@ export default function App() {
       const nextHash = `#${params.toString()}`;
       const search = new URLSearchParams(window.location.search);
       // Do not erase an incoming shared-article URL while the article list is still loading.
-      if (search.has('article') && !selectedArticle) return;
+      if (search.has('article') && !selectedArticle && !publicAuthorId) return;
       if (publicAuthorId) search.set('author', publicAuthorId); else search.delete('author');
       if (selectedArticle) search.set('article', selectedArticle.slug || selectedArticle.id);
       else search.delete('article');
