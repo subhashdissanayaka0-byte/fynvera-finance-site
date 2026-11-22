@@ -2205,20 +2205,46 @@ export default function App() {
     if (match) { setSelectedArticle(match); setWorkspaceOpen(false); setActiveView('Article'); }
   }, [articles]);
 
-  // Dynamic page titles, descriptions and social previews improve context on client-side navigation.
+  // Keep search, sharing and crawler metadata in sync with client-side navigation.
   useEffect(() => {
-    const title = publicAuthorId ? `Author Profile | Fynorix` : selectedArticle ? `${selectedArticle.title} | Fynorix` : workspaceOpen ? `${workspacePage} | Fynorix Workspace` : activeView === 'Home' ? 'Fynorix — Understand Money, Build Wealth' : `${activeView} | Fynorix`;
-    const description = selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on Fynorix.`);
+    const title = publicAuthorId ? 'Author Profile | FYNORIX' : selectedArticle ? `${selectedArticle.title} | FYNORIX` : workspaceOpen ? `${workspacePage} | FYNORIX Workspace` : activeView === 'Home' ? 'FYNORIX — Understand Money, Build Wealth' : `${activeView} | FYNORIX`;
+    const description = String(selectedArticle?.excerpt || (publicAuthorId ? 'Explore this FYNORIX author profile and published finance articles.' : `Explore ${activeView.toLowerCase()} insights, practical financial guides, and free calculators on FYNORIX.`)).replace(/\\s+/g, ' ').slice(0, 300);
+    const canonicalUrl = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : publicAuthorId ? `?author=${encodeURIComponent(publicAuthorId)}` : '');
+    const imageUrl = selectedArticle?.image ? new URL(selectedArticle.image, window.location.origin).href : new URL('/images/article-wall-street-rally.jpg', window.location.origin).href;
+    const noIndex = Boolean(workspaceOpen || authMode);
     document.title = title;
     const updateMeta = (selector, value) => { const element = document.querySelector(selector); if (element) element.setAttribute('content', value); };
     updateMeta('meta[name="description"]', description);
+    updateMeta('meta[name="keywords"]', selectedArticle?.keywords?.join(', ') || 'finance education, investing, stock market, personal finance, forex, cryptocurrency, financial calculators');
+    updateMeta('meta[name="robots"]', noIndex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
+    updateMeta('meta[property="og:type"]', selectedArticle ? 'article' : 'website');
     updateMeta('meta[property="og:title"]', title);
     updateMeta('meta[property="og:description"]', description);
-    updateMeta('meta[name="keywords"]', selectedArticle?.keywords?.join(', ') || 'investing, stock market news, finance news, personal finance, forex, cryptocurrency, wealth building');
+    updateMeta('meta[property="og:url"]', canonicalUrl);
+    updateMeta('meta[property="og:image"]', imageUrl);
+    updateMeta('meta[name="twitter:card"]', 'summary_large_image');
+    updateMeta('meta[name="twitter:title"]', title);
+    updateMeta('meta[name="twitter:description"]', description);
+    updateMeta('meta[name="twitter:image"]', imageUrl);
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-    canonical.href = window.location.origin + window.location.pathname + (selectedArticle ? `?article=${encodeURIComponent(selectedArticle.slug || selectedArticle.id)}` : publicAuthorId ? `?author=${encodeURIComponent(publicAuthorId)}` : '');
-  }, [activeView, selectedArticle, workspaceOpen, workspacePage]);
+    canonical.href = canonicalUrl;
+    let structuredData = document.getElementById('fynorix-page-schema');
+    if (!structuredData) { structuredData = document.createElement('script'); structuredData.id = 'fynorix-page-schema'; structuredData.type = 'application/ld+json'; document.head.appendChild(structuredData); }
+    const schema = selectedArticle ? {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: selectedArticle.title,
+      description,
+      image: imageUrl,
+      datePublished: selectedArticle.date ? new Date(selectedArticle.date).toISOString() : undefined,
+      dateModified: selectedArticle.updatedAt ? new Date(selectedArticle.updatedAt).toISOString() : undefined,
+      author: { '@type': 'Person', name: selectedArticle.author || 'FYNORIX Editorial', ...(selectedArticle.authorId ? { url: window.location.origin + '/?author=' + encodeURIComponent(selectedArticle.authorId) } : {}) },
+      publisher: { '@type': 'Organization', name: 'FYNORIX', logo: { '@type': 'ImageObject', url: new URL('/favicon.svg', window.location.origin).href } },
+      mainEntityOfPage: canonicalUrl
+    } : { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description, url: canonicalUrl, isPartOf: { '@type': 'WebSite', name: 'FYNORIX', url: window.location.origin } };
+    structuredData.textContent = JSON.stringify(schema, (key, value) => value === undefined ? undefined : value).replace(/</g, '\\u003c');
+  }, [activeView, selectedArticle, publicAuthorId, workspaceOpen, workspacePage, authMode]);
 
   async function handleAuthSubmit({ mode, name, email, password }) {
     setAuthBusy(true);
