@@ -82,12 +82,13 @@ export const workspaceItems = [
   { label: 'Log Out', icon: 'LogOut', special: true }
 ];
 
-// Add the real FYNVERA account URLs here when they are ready. Empty URLs stay hidden in the footer.
+// Official FYNORIX destinations plus clearly marked platform-homepage demo links.
 export const siteSocialLinks = {
-  x: '',       // Example: https://x.com/yourhandle
-  tiktok: '',  // Example: https://www.tiktok.com/@yourhandle
-  facebook: '',// Example: https://www.facebook.com/yourpage
-  telegram: '' // Example: https://t.me/yourchannel
+  instagram: 'https://www.instagram.com/', // DEMO — official account coming soon
+  x: 'https://x.com/',                     // DEMO — official account coming soon
+  tiktok: 'https://www.tiktok.com/',       // DEMO — official account coming soon
+  facebook: 'https://www.facebook.com/share/1CL171y9Nx/',
+  telegram: 'https://t.me/+oPeIg0JwB4wwYTll'
 };
 
 export const calculatorList = [
