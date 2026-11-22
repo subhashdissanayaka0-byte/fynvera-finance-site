@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     const pageSize = 1000;
     for (let offset = 0; offset < 10000; offset += pageSize) {
       const endpoint = new URL('/rest/v1/articles', supabaseUrl);
-      endpoint.searchParams.set('select', 'id,title,created_at,updated_at');
+      endpoint.searchParams.set('select', 'id,title,created_at');
       endpoint.searchParams.set('status', 'eq.published');
       endpoint.searchParams.set('order', 'created_at.desc');
       endpoint.searchParams.set('limit', String(pageSize));
