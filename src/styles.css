@@ -2292,3 +2292,28 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
 .public-author-stats{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:34px}
 .public-author-articles-heading{margin:26px 0 18px}
 @media(max-width:650px){.article-rating-panel{padding:16px}.article-rating-options{grid-template-columns:repeat(5,minmax(0,1fr))}.article-rating-footer{align-items:flex-start;flex-direction:column}.public-author-hero{padding:18px}.public-author-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.public-author-identity{align-items:flex-start}.public-author-identity h1{font-size:28px}}
+
+
+/* Compact author statistics and rating panels */
+.public-author-stats{gap:10px;margin-bottom:24px}
+.public-author-stats .summary-card{min-height:104px;padding:11px 13px 10px;border-radius:12px}
+.public-author-stats .summary-card-top{font-size:7px;gap:5px}
+.public-author-stats .summary-icon{width:24px;height:24px;border-radius:7px}
+.public-author-stats .summary-icon svg{width:14px;height:14px}
+.public-author-stats .summary-card>strong{margin-top:7px;font-size:clamp(18px,1.7vw,22px)}
+.public-author-hero{padding:20px;margin-bottom:16px}
+.public-author-bio{margin:12px 0;font-size:13px;line-height:1.6}
+.public-author-articles-heading{margin:20px 0 13px}
+.article-rating-panel{padding:16px;margin:18px 0;border-radius:13px}
+.article-rating-summary{margin:8px 0 11px}
+.article-rating-summary>strong{font-size:26px}
+.article-rating-choice{min-height:34px;border-radius:8px;font-size:12px}
+.article-rating-footer{margin-top:11px}
+@media(max-width:650px){
+ .public-author-stats{gap:8px}
+ .public-author-stats .summary-card{min-height:88px;padding:9px 10px}
+ .public-author-stats .summary-card>strong{margin-top:5px;font-size:18px}
+ .public-author-hero{padding:15px}
+ .article-rating-panel{padding:13px}
+ .article-rating-choice{min-height:32px}
+}
