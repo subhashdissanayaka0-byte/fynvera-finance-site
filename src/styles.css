@@ -2747,3 +2747,456 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   .appearance-panel { left: 0; bottom: 48px; padding: 14px; max-height: min(76vh, 680px); }
 }
 @media(prefers-reduced-motion:reduce) { .appearance-panel { animation: none; } }
+
+
+/* Complete Paper Light pass: keep every public and workspace surface consistent */
+.app-shell[data-theme="paper"] {
+  background: #f2f6fa !important;
+  color: #1c2d3d !important;
+  color-scheme: light;
+}
+.app-shell[data-theme="paper"] .site-header {
+  background: rgba(255,255,255,.97) !important;
+  border-bottom: 1px solid #dce5ed !important;
+}
+.app-shell[data-theme="paper"] .brand { color: #173047 !important; }
+.app-shell[data-theme="paper"] .brand-words strong { color: #173047 !important; }
+.app-shell[data-theme="paper"] .brand-words small { color: #63788b !important; }
+.app-shell[data-theme="paper"] .main-nav .nav-link,
+.app-shell[data-theme="paper"] .main-nav .communities-nav-trigger {
+  color: #2a4054 !important;
+  background: #ffffff !important;
+  border-color: #d9e3eb !important;
+  text-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(19,43,64,.04) !important;
+}
+.app-shell[data-theme="paper"] .main-nav .nav-link:hover,
+.app-shell[data-theme="paper"] .main-nav .nav-link-active,
+.app-shell[data-theme="paper"] .main-nav .communities-nav-trigger:hover {
+  color: #087f96 !important;
+  border-color: #8fcbd5 !important;
+  background: #eff8fa !important;
+}
+.app-shell[data-theme="paper"] .header-actions .search-trigger,
+.app-shell[data-theme="paper"] .mobile-menu { color: #30485e !important; }
+.app-shell[data-theme="paper"] .header-user { color: #29455b !important; background: #f4f8fb !important; border-color: #d7e2eb !important; }
+.app-shell[data-theme="paper"] .header-signin,
+.app-shell[data-theme="paper"] .button-outline,
+.app-shell[data-theme="paper"] .button-ghost,
+.app-shell[data-theme="paper"] .button-soft {
+  color: #29455b !important;
+  background: #ffffff !important;
+  border-color: #cbd9e4 !important;
+}
+.app-shell[data-theme="paper"] .button-primary {
+  color: #ffffff !important;
+  background: linear-gradient(110deg,#078da5,#08758f) !important;
+  border-color: transparent !important;
+}
+.app-shell[data-theme="paper"] .button-primary:hover { background: linear-gradient(110deg,#087f96,#075f78) !important; }
+.app-shell[data-theme="paper"] .text-link,
+.app-shell[data-theme="paper"] .back-link { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .icon-button { color: #526a7f !important; }
+
+/* Light navigation dropdowns, including the investor intro and communities menu */
+.app-shell[data-theme="paper"] .nav-dropdown,
+.app-shell[data-theme="paper"] .communities-nav-dropdown,
+.app-shell[data-theme="paper"] .more-subdropdown {
+  background: #ffffff !important;
+  border: 1px solid #d7e2eb !important;
+  box-shadow: 0 18px 42px rgba(27,48,67,.14) !important;
+}
+.app-shell[data-theme="paper"] .nav-dropdown button,
+.app-shell[data-theme="paper"] .more-category-link,
+.app-shell[data-theme="paper"] .more-category-toggle {
+  color: #30485e !important;
+}
+.app-shell[data-theme="paper"] .nav-dropdown button:hover,
+.app-shell[data-theme="paper"] .more-subdropdown button:hover {
+  background: #edf7f9 !important;
+  color: #087f96 !important;
+}
+.app-shell[data-theme="paper"] .nav-investor-intro { border-bottom-color: #e1e9ef !important; }
+.app-shell[data-theme="paper"] .nav-investor-intro strong { color: #19364b !important; }
+.app-shell[data-theme="paper"] .nav-investor-intro small,
+.app-shell[data-theme="paper"] .communities-dropdown-heading span,
+.app-shell[data-theme="paper"] .communities-dropdown-footer { color: #687d90 !important; }
+.app-shell[data-theme="paper"] .communities-dropdown-heading strong,
+.app-shell[data-theme="paper"] .community-link-copy strong { color: #20384d !important; }
+.app-shell[data-theme="paper"] .community-link-card { background: #f7fafc !important; border-color: #dce6ed !important; color: #20384d !important; }
+.app-shell[data-theme="paper"] .community-link-copy small { color: #6c8092 !important; }
+.app-shell[data-theme="paper"] .community-link-card:hover { background: #eef8fa !important; border-color: #9acbd5 !important; }
+
+/* Consistent white cards and pale surfaces across the homepage */
+.app-shell[data-theme="paper"] .panel,
+.app-shell[data-theme="paper"] .feature-story-card,
+.app-shell[data-theme="paper"] .article-card,
+.app-shell[data-theme="paper"] .trade-cta,
+.app-shell[data-theme="paper"] .calculator-mini,
+.app-shell[data-theme="paper"] .category-tile,
+.app-shell[data-theme="paper"] .workspace-banner,
+.app-shell[data-theme="paper"] .workspace-preview-card,
+.app-shell[data-theme="paper"] .market-ticker,
+.app-shell[data-theme="paper"] .feature-story-empty,
+.app-shell[data-theme="paper"] .editorial-note,
+.app-shell[data-theme="paper"] .learn-cta,
+.app-shell[data-theme="paper"] .category-hero,
+.app-shell[data-theme="paper"] .news-insights-hero,
+.app-shell[data-theme="paper"] .news-filter-row,
+.app-shell[data-theme="paper"] .topic-list-panel,
+.app-shell[data-theme="paper"] .fynorix-games-section,
+.app-shell[data-theme="paper"] .fynorix-game-stage,
+.app-shell[data-theme="paper"] .financial-games-library,
+.app-shell[data-theme="paper"] .financial-game-play-panel {
+  color: #203448 !important;
+  background: #ffffff !important;
+  border-color: #dce5ed !important;
+  box-shadow: 0 8px 26px rgba(30,54,76,.055) !important;
+}
+.app-shell[data-theme="paper"] .workspace-banner {
+  background: linear-gradient(120deg,#ffffff 0%,#f7fbfd 100%) !important;
+}
+.app-shell[data-theme="paper"] .workspace-banner-copy h2,
+.app-shell[data-theme="paper"] .trade-cta-copy h3,
+.app-shell[data-theme="paper"] .feature-story-info h3,
+.app-shell[data-theme="paper"] .category-tile strong,
+.app-shell[data-theme="paper"] .workspace-preview-card strong,
+.app-shell[data-theme="paper"] .section-title-row h2,
+.app-shell[data-theme="paper"] .panel-heading h3,
+.app-shell[data-theme="paper"] .fynorix-games-heading h2,
+.app-shell[data-theme="paper"] .fynorix-game-inner h3 {
+  color: #1d3042 !important;
+}
+.app-shell[data-theme="paper"] .hero-copy h1 { color: #1b2f42 !important; }
+.app-shell[data-theme="paper"] .hero-copy h1 span { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .hero-kicker,
+.app-shell[data-theme="paper"] .eyebrow { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .hero-copy > p,
+.app-shell[data-theme="paper"] .hero-proof strong,
+.app-shell[data-theme="paper"] .feature-story-info > p,
+.app-shell[data-theme="paper"] .trade-cta-copy p,
+.app-shell[data-theme="paper"] .category-tile small,
+.app-shell[data-theme="paper"] .workspace-banner-copy > p,
+.app-shell[data-theme="paper"] .workspace-banner-actions > span,
+.app-shell[data-theme="paper"] .section-title-row p,
+.app-shell[data-theme="paper"] .fynorix-games-heading p {
+  color: #5b7083 !important;
+}
+.app-shell[data-theme="paper"] .hero-proof small { color: #73879a !important; }
+.app-shell[data-theme="paper"] .hero-floating-card {
+  background: rgba(255,255,255,.96) !important;
+  border-color: #d7e3eb !important;
+  color: #20384d !important;
+  box-shadow: 0 10px 28px rgba(28,53,74,.12) !important;
+}
+.app-shell[data-theme="paper"] .hero-floating-card strong,
+.app-shell[data-theme="paper"] .mini-chart-header { color: #20384d !important; }
+.app-shell[data-theme="paper"] .hero-floating-card small,
+.app-shell[data-theme="paper"] .float-card-top small,
+.app-shell[data-theme="paper"] .float-card-bottom > small { color: #6c8194 !important; }
+.app-shell[data-theme="paper"] .market-ticker { background: #ffffff !important; }
+.app-shell[data-theme="paper"] .ticker-label,
+.app-shell[data-theme="paper"] .ticker-item strong,
+.app-shell[data-theme="paper"] .ticker-symbol { color: #294257 !important; }
+.app-shell[data-theme="paper"] .ticker-item > span,
+.app-shell[data-theme="paper"] .ticker-source { color: #708497 !important; }
+.app-shell[data-theme="paper"] .market-tabs { border-bottom-color: #e1e9ef !important; }
+.app-shell[data-theme="paper"] .market-tabs button { color: #667d90 !important; }
+.app-shell[data-theme="paper"] .market-tabs button:hover,
+.app-shell[data-theme="paper"] .market-tabs .market-tab-active { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .market-row { border-bottom-color: #e8eef3 !important; }
+.app-shell[data-theme="paper"] .market-name,
+.app-shell[data-theme="paper"] .market-row > strong { color: #294257 !important; }
+.app-shell[data-theme="paper"] .sample-data-note { color: #718598 !important; }
+.app-shell[data-theme="paper"] .calculator-mini strong { color: #294257 !important; }
+.app-shell[data-theme="paper"] .calculator-mini small { color: #6b8093 !important; }
+.app-shell[data-theme="paper"] .calculator-mini:hover,
+.app-shell[data-theme="paper"] .category-tile:hover { background: #f1f8fa !important; border-color: #a8d1d9 !important; }
+.app-shell[data-theme="paper"] .category-arrow { color: #6a9ba9 !important; }
+.app-shell[data-theme="paper"] .workspace-preview-card { background: linear-gradient(145deg,#ffffff,#f5fafc) !important; }
+.app-shell[data-theme="paper"] .preview-card-head,
+.app-shell[data-theme="paper"] .preview-total small,
+.app-shell[data-theme="paper"] .preview-card-foot { color: #657b8e !important; }
+
+/* Article pages, article lists and editorial details */
+.app-shell[data-theme="paper"] .article-title-button,
+.app-shell[data-theme="paper"] .article-title-button h3 { color: #203448 !important; }
+.app-shell[data-theme="paper"] .article-title-button:hover h3 { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .article-meta { color: #6c8092 !important; }
+.app-shell[data-theme="paper"] .article-meta > span:first-child,
+.app-shell[data-theme="paper"] .category-label { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .feature-story-info > p,
+.app-shell[data-theme="paper"] .article-card-body > p,
+.app-shell[data-theme="paper"] .author-mini { color: #5c7184 !important; }
+.app-shell[data-theme="paper"] .article-card-footer { border-top-color: #e5edf2 !important; }
+.app-shell[data-theme="paper"] .article-main-column h1,
+.app-shell[data-theme="paper"] .public-author-identity h1,
+.app-shell[data-theme="paper"] .news-insights-hero h1,
+.app-shell[data-theme="paper"] .category-hero h1 { color: #1d3042 !important; }
+.app-shell[data-theme="paper"] .article-lead,
+.app-shell[data-theme="paper"] .category-hero-copy > p,
+.app-shell[data-theme="paper"] .news-insights-hero > p,
+.app-shell[data-theme="paper"] .public-author-bio { color: #586f82 !important; }
+.app-shell[data-theme="paper"] .article-byline,
+.app-shell[data-theme="paper"] .article-toolbar { color: #63798c !important; border-color: #e0e8ee !important; }
+.app-shell[data-theme="paper"] .article-byline > div:nth-child(2) strong { color: #243b50 !important; }
+.app-shell[data-theme="paper"] .article-byline small { color: #718598 !important; }
+.app-shell[data-theme="paper"] .article-toolbar > span { color: #63798c !important; }
+.app-shell[data-theme="paper"] .article-body-copy > p { color: #293e52 !important; }
+.app-shell[data-theme="paper"] .article-aside .panel,
+.app-shell[data-theme="paper"] .article-community,
+.app-shell[data-theme="paper"] .article-rating-panel,
+.app-shell[data-theme="paper"] .public-author-hero { background: #ffffff !important; color: #203448 !important; border-color: #dce5ed !important; }
+.app-shell[data-theme="paper"] .article-aside .panel h3,
+.app-shell[data-theme="paper"] .article-rating-panel h3,
+.app-shell[data-theme="paper"] .article-community h3 { color: #203448 !important; }
+.app-shell[data-theme="paper"] .article-comment-meta strong,
+.app-shell[data-theme="paper"] .article-comment p { color: #40596e !important; }
+.app-shell[data-theme="paper"] .article-comment-meta time,
+.app-shell[data-theme="paper"] .article-rating-summary > span,
+.app-shell[data-theme="paper"] .article-rating-footer small { color: #708497 !important; }
+.app-shell[data-theme="paper"] .article-rating-choice {
+  color: #294257 !important;
+  background: #f5f9fb !important;
+  border-color: #d8e3eb !important;
+}
+.app-shell[data-theme="paper"] .article-rating-choice:hover,
+.app-shell[data-theme="paper"] .article-rating-choice.is-selected { color: #087f96 !important; background: #eaf7f9 !important; border-color: #8dcbd5 !important; }
+.app-shell[data-theme="paper"] .keyword-tags button,
+.app-shell[data-theme="paper"] .article-aside-tags button { color: #176d83 !important; background: #eff7f9 !important; border-color: #cbdfe6 !important; }
+
+/* Category pages, filters and learning lists */
+.app-shell[data-theme="paper"] .category-hero { background: linear-gradient(120deg,#ffffff,#f4f9fb) !important; }
+.app-shell[data-theme="paper"] .category-hero .breadcrumbs,
+.app-shell[data-theme="paper"] .category-hero .breadcrumbs button { color: #687f92 !important; }
+.app-shell[data-theme="paper"] .category-hero h1 span { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .category-art-chip { color: #29465a !important; background: rgba(255,255,255,.96) !important; border-color: #d8e6ed !important; }
+.app-shell[data-theme="paper"] .subcategory-row > strong { color: #294257 !important; }
+.app-shell[data-theme="paper"] .subcategory-chips button,
+.app-shell[data-theme="paper"] .workspace-topic-chips button,
+.app-shell[data-theme="paper"] .news-filter-row button {
+  color: #536b7e !important; background: #ffffff !important; border-color: #dce5ed !important;
+}
+.app-shell[data-theme="paper"] .subcategory-chips button:hover,
+.app-shell[data-theme="paper"] .subcategory-chips .subcategory-active,
+.app-shell[data-theme="paper"] .news-filter-row button:hover,
+.app-shell[data-theme="paper"] .news-filter-row .news-filter-active {
+  color: #087f96 !important; background: #eaf6f8 !important; border-color: #9bcbd4 !important;
+}
+.app-shell[data-theme="paper"] .topic-list-panel > button { color: #405a70 !important; border-bottom-color: #e8eef3 !important; }
+.app-shell[data-theme="paper"] .learn-cta p,
+.app-shell[data-theme="paper"] .editorial-note { color: #5d7386 !important; }
+.app-shell[data-theme="paper"] .editorial-note strong { color: #20384d !important; }
+
+/* Workspace background, sidebar, cards, tables and editors */
+.app-shell[data-theme="paper"] .workspace-shell,
+.app-shell[data-theme="paper"] .workspace-stage { background: #f2f6fa !important; }
+.app-shell[data-theme="paper"] .workspace-sidebar {
+  background: #ffffff !important;
+  border-right-color: #dce5ed !important;
+  box-shadow: 5px 0 24px rgba(26,50,71,.04) !important;
+}
+.app-shell[data-theme="paper"] .workspace-user-mini,
+.app-shell[data-theme="paper"] .sidebar-bottom-card,
+.app-shell[data-theme="paper"] .welcome-date,
+.app-shell[data-theme="paper"] .demo-banner,
+.app-shell[data-theme="paper"] .summary-card,
+.app-shell[data-theme="paper"] .portfolio-total-card,
+.app-shell[data-theme="paper"] .watchlist-market-card,
+.app-shell[data-theme="paper"] .empty-state,
+.app-shell[data-theme="paper"] .data-pill,
+.app-shell[data-theme="paper"] .editorial-toolbar,
+.app-shell[data-theme="paper"] .image-upload-zone,
+.app-shell[data-theme="paper"] .seo-preview,
+.app-shell[data-theme="paper"] .editor-checklist,
+.app-shell[data-theme="paper"] .article-studio-intro,
+.app-shell[data-theme="paper"] .fynorix-growth-stats > div,
+.app-shell[data-theme="paper"] .fynorix-growth-result-grid > div,
+.app-shell[data-theme="paper"] .fynorix-growth-compare > div {
+  color: #294257 !important;
+  background: #ffffff !important;
+  border-color: #dce5ed !important;
+}
+.app-shell[data-theme="paper"] .summary-card-highlight,
+.app-shell[data-theme="paper"] .portfolio-total-card { background: linear-gradient(125deg,#ffffff,#f3f9fb) !important; }
+.app-shell[data-theme="paper"] .workspace-user-mini strong,
+.app-shell[data-theme="paper"] .sidebar-bottom-card strong,
+.app-shell[data-theme="paper"] .workspace-breadcrumb strong,
+.app-shell[data-theme="paper"] .summary-card > strong,
+.app-shell[data-theme="paper"] .portfolio-asset strong,
+.app-shell[data-theme="paper"] .table-empty strong,
+.app-shell[data-theme="paper"] .editorial-toolbar strong,
+.app-shell[data-theme="paper"] .connected-services-panel h3,
+.app-shell[data-theme="paper"] .manage-article-copy > button { color: #20384d !important; }
+.app-shell[data-theme="paper"] .workspace-user-mini small,
+.app-shell[data-theme="paper"] .sidebar-bottom-card p,
+.app-shell[data-theme="paper"] .sidebar-section-label,
+.app-shell[data-theme="paper"] .sidebar-footer,
+.app-shell[data-theme="paper"] .workspace-breadcrumb,
+.app-shell[data-theme="paper"] .workspace-welcome p,
+.app-shell[data-theme="paper"] .summary-card-top,
+.app-shell[data-theme="paper"] .summary-card > small,
+.app-shell[data-theme="paper"] .portfolio-table td,
+.app-shell[data-theme="paper"] .portfolio-asset small,
+.app-shell[data-theme="paper"] .table-footnote,
+.app-shell[data-theme="paper"] .table-empty,
+.app-shell[data-theme="paper"] .workspace-footer-note,
+.app-shell[data-theme="paper"] .editorial-toolbar span,
+.app-shell[data-theme="paper"] .editor-panel-heading p,
+.app-shell[data-theme="paper"] .image-upload-zone span,
+.app-shell[data-theme="paper"] .image-upload-zone small,
+.app-shell[data-theme="paper"] .seo-preview-label,
+.app-shell[data-theme="paper"] .seo-preview > p,
+.app-shell[data-theme="paper"] .seo-preview > small,
+.app-shell[data-theme="paper"] .editor-checklist > span,
+.app-shell[data-theme="paper"] .connected-services-panel p { color: #647a8d !important; }
+.app-shell[data-theme="paper"] .workspace-nav-link,
+.app-shell[data-theme="paper"] .workspace-nav-group-toggle { color: #4d6478 !important; }
+.app-shell[data-theme="paper"] .workspace-nav-link > svg,
+.app-shell[data-theme="paper"] .workspace-nav-group-toggle > svg:first-child { color: #71889a !important; }
+.app-shell[data-theme="paper"] .workspace-nav-link:hover,
+.app-shell[data-theme="paper"] .workspace-nav-group-toggle:hover,
+.app-shell[data-theme="paper"] .workspace-nav-group-open > .workspace-nav-group-toggle,
+.app-shell[data-theme="paper"] .workspace-nav-group-active > .workspace-nav-group-toggle {
+  color: #087f96 !important; background: #edf7f9 !important;
+}
+.app-shell[data-theme="paper"] .workspace-nav-active { color: #087f96 !important; background: #e7f5f7 !important; border-color: #c8e3e8 !important; }
+.app-shell[data-theme="paper"] .workspace-nav-logout { color: #b24b62 !important; border-top-color: #e7edf2 !important; }
+.app-shell[data-theme="paper"] .portfolio-table th { color: #60778a !important; background: #f1f6f9 !important; border-color: #e1e9ef !important; }
+.app-shell[data-theme="paper"] .portfolio-table td { color: #425a6e !important; border-bottom-color: #e8eef3 !important; }
+.app-shell[data-theme="paper"] .portfolio-table td > strong { color: #20384d !important; }
+.app-shell[data-theme="paper"] .type-pill { color: #536d80 !important; background: #f1f6f9 !important; border-color: #d8e3eb !important; }
+.app-shell[data-theme="paper"] .quick-action-list strong { color: #29465a !important; }
+.app-shell[data-theme="paper"] .quick-action-list small { color: #708598 !important; }
+.app-shell[data-theme="paper"] .holding-form-panel > p,
+.app-shell[data-theme="paper"] .workspace-table-panel .panel-heading > div > p,
+.app-shell[data-theme="paper"] .dashboard-side-panel .panel-heading > div > p { color: #657b8e !important; }
+
+/* Inputs, search, calculator results, modals and authentication surfaces */
+.app-shell[data-theme="paper"] .modal-card,
+.app-shell[data-theme="paper"] .assistant-panel {
+  background: #ffffff !important;
+  color: #203448 !important;
+  border-color: #d6e2eb !important;
+  box-shadow: 0 22px 70px rgba(26,48,67,.2) !important;
+}
+.app-shell[data-theme="paper"] .modal-close { color: #516a7e !important; background: #f3f7fa !important; }
+.app-shell[data-theme="paper"] .field-label,
+.app-shell[data-theme="paper"] .field-label small,
+.app-shell[data-theme="paper"] .auth-switch,
+.app-shell[data-theme="paper"] .auth-legal,
+.app-shell[data-theme="paper"] .auth-modal-copy > p,
+.app-shell[data-theme="paper"] .calculator-modal-heading p { color: #5d7386 !important; }
+.app-shell[data-theme="paper"] .input-wrap,
+.app-shell[data-theme="paper"] .select-field,
+.app-shell[data-theme="paper"] .plain-field,
+.app-shell[data-theme="paper"] .search-input-wrap,
+.app-shell[data-theme="paper"] .news-insights-search,
+.app-shell[data-theme="paper"] .market-crypto-search,
+.app-shell[data-theme="paper"] .fynorix-growth-search {
+  color: #294257 !important;
+  background: #f8fbfd !important;
+  border-color: #d2dfe8 !important;
+}
+.app-shell[data-theme="paper"] .input-wrap input,
+.app-shell[data-theme="paper"] .select-field,
+.app-shell[data-theme="paper"] .plain-field,
+.app-shell[data-theme="paper"] .search-input-wrap input,
+.app-shell[data-theme="paper"] .market-crypto-search input { color: #20384d !important; }
+.app-shell[data-theme="paper"] .input-wrap input::placeholder,
+.app-shell[data-theme="paper"] .plain-field::placeholder,
+.app-shell[data-theme="paper"] .search-input-wrap input::placeholder { color: #8395a5 !important; }
+.app-shell[data-theme="paper"] .select-field option { color: #20384d !important; background: #ffffff !important; }
+.app-shell[data-theme="paper"] .calculator-result-card,
+.app-shell[data-theme="paper"] .calculator-disclaimer { background: #f3f8fa !important; color: #40596e !important; border-color: #d6e5eb !important; }
+.app-shell[data-theme="paper"] .result-label { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .calculator-result-card > p,
+.app-shell[data-theme="paper"] .calculator-disclaimer,
+.app-shell[data-theme="paper"] .result-foot { color: #5e7487 !important; }
+.app-shell[data-theme="paper"] .search-result strong,
+.app-shell[data-theme="paper"] .search-empty strong { color: #20384d !important; }
+.app-shell[data-theme="paper"] .search-result small,
+.app-shell[data-theme="paper"] .search-results-label,
+.app-shell[data-theme="paper"] .search-empty,
+.app-shell[data-theme="paper"] .search-topic-links > span { color: #6b8092 !important; }
+.app-shell[data-theme="paper"] .search-result:hover,
+.app-shell[data-theme="paper"] .search-topic-links button { background: #f0f7f9 !important; color: #34596d !important; border-color: #d4e4ea !important; }
+.app-shell[data-theme="paper"] .assistant-header { background: #f1f7fa !important; border-bottom-color: #dfe8ef !important; }
+.app-shell[data-theme="paper"] .assistant-header strong,
+.app-shell[data-theme="paper"] .assistant-panel h3 { color: #20384d !important; }
+.app-shell[data-theme="paper"] .assistant-context,
+.app-shell[data-theme="paper"] .assistant-suggestions > span,
+.app-shell[data-theme="paper"] .assistant-disclaimer { color: #718598 !important; background: #f8fbfd !important; }
+.app-shell[data-theme="paper"] .assistant-bubble { color: #294257 !important; background: #f1f6f9 !important; border-color: #dce6ed !important; }
+.app-shell[data-theme="paper"] .assistant-message-user .assistant-bubble { color: #ffffff !important; background: #087f96 !important; }
+.app-shell[data-theme="paper"] .assistant-suggestions button { color: #34596d !important; background: #f7fafc !important; border-color: #d8e4eb !important; }
+.app-shell[data-theme="paper"] .assistant-input-row { background: #ffffff !important; border-color: #d2dfe8 !important; }
+.app-shell[data-theme="paper"] .assistant-input-row input { color: #20384d !important; }
+
+/* Finance games and other interactive workspace tools */
+.app-shell[data-theme="paper"] .fynorix-games-free,
+.app-shell[data-theme="paper"] .fynorix-game-feedback,
+.app-shell[data-theme="paper"] .fynorix-game-result,
+.app-shell[data-theme="paper"] .fynorix-budget-total,
+.app-shell[data-theme="paper"] .fynorix-game-choice,
+.app-shell[data-theme="paper"] .fynorix-game-options button,
+.app-shell[data-theme="paper"] .fynorix-risk-list label,
+.app-shell[data-theme="paper"] .financial-games-summary > div,
+.app-shell[data-theme="paper"] .financial-game-level,
+.app-shell[data-theme="paper"] .financial-game-question-card,
+.app-shell[data-theme="paper"] .financial-game-answer-list button {
+  color: #294257 !important;
+  background: #f8fbfd !important;
+  border-color: #d9e5ec !important;
+}
+.app-shell[data-theme="paper"] .fynorix-game-choice.active,
+.app-shell[data-theme="paper"] .fynorix-game-choice:hover,
+.app-shell[data-theme="paper"] .financial-game-tile.selected,
+.app-shell[data-theme="paper"] .financial-game-answer-list button.chosen,
+.app-shell[data-theme="paper"] .financial-game-level.active { background: #eaf6f8 !important; border-color: #9acbd5 !important; color: #087f96 !important; }
+.app-shell[data-theme="paper"] .fynorix-game-choice-copy small,
+.app-shell[data-theme="paper"] .fynorix-game-help,
+.app-shell[data-theme="paper"] .fynorix-games-note,
+.app-shell[data-theme="paper"] .financial-game-play-head p,
+.app-shell[data-theme="paper"] .financial-game-question-meta,
+.app-shell[data-theme="paper"] .financial-game-level-progress > div span { color: #667d90 !important; }
+.app-shell[data-theme="paper"] .fynorix-game-topline,
+.app-shell[data-theme="paper"] .financial-game-kicker { color: #087f96 !important; }
+.app-shell[data-theme="paper"] .fynorix-scam-message { color: #465b6e !important; }
+.app-shell[data-theme="paper"] .fynorix-risk-list select,
+.app-shell[data-theme="paper"] .financial-game-level-picker select { background: #ffffff !important; color: #20384d !important; border-color: #cbdbe5 !important; color-scheme: light; }
+.app-shell[data-theme="paper"] .financial-game-level-picker select option { color: #20384d !important; background: #ffffff !important; }
+.app-shell[data-theme="paper"] .financial-game-question-card h3,
+.app-shell[data-theme="paper"] .financial-game-play-head h2 { color: #20384d !important; }
+.app-shell[data-theme="paper"] .financial-game-level b,
+.app-shell[data-theme="paper"] .financial-game-tile-copy b { color: #294257 !important; }
+.app-shell[data-theme="paper"] .financial-game-tile-copy small,
+.app-shell[data-theme="paper"] .financial-game-tile-copy i { color: #6b8092 !important; }
+
+/* Footer, badges and shared muted copy */
+.app-shell[data-theme="paper"] .site-footer { border-top-color: #dce5ed !important; }
+.app-shell[data-theme="paper"] .footer-main > p,
+.app-shell[data-theme="paper"] .footer-socials,
+.app-shell[data-theme="paper"] .footer-links button,
+.app-shell[data-theme="paper"] .footer-bottom { color: #687f92 !important; }
+.app-shell[data-theme="paper"] .footer-links strong { color: #294257 !important; }
+.app-shell[data-theme="paper"] .site-social-links a { color: #3f647b !important; background: #f7fafc !important; border-color: #d7e3eb !important; }
+.app-shell[data-theme="paper"] .footer-legal-links a { color: #536e82 !important; }
+.app-shell[data-theme="paper"] .ad-slot-placeholder { background: #f8fbfd !important; border-color: #dce6ed !important; }
+.app-shell[data-theme="paper"] .ad-slot-label,
+.app-shell[data-theme="paper"] .ad-slot-message { color: #8193a2 !important; }
+.app-shell[data-theme="paper"] .empty-state { color: #63798c !important; background: #ffffff !important; }
+.app-shell[data-theme="paper"] .empty-state > strong { color: #294257 !important; }
+.app-shell[data-theme="paper"] .toast { color: #20384d !important; background: #ffffff !important; border-color: #d6e2eb !important; }
+.app-shell[data-theme="paper"] .article-status,
+.app-shell[data-theme="paper"] .manage-article-copy > small { color: #657b8e !important; }
+
+@media (max-width: 900px) {
+  .app-shell[data-theme="paper"] .main-nav {
+    background: #ffffff !important;
+    border-bottom-color: #dce5ed !important;
+    box-shadow: 0 12px 24px rgba(30,54,76,.08) !important;
+  }
+  .app-shell[data-theme="paper"] .nav-category-wrap,
+  .app-shell[data-theme="paper"] .more-nav-wrap { border-bottom-color: #edf1f5 !important; }
+}
