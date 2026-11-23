@@ -1,6 +1,12 @@
-// Vercel serverless endpoint for the FYNVERA AI Guide.
+// Vercel serverless endpoint for the FYNORIX AI Guide.
 // Keep GEMINI_API_KEY in Vercel Environment Variables; never expose it in VITE_*.
 export default async function handler(req, res) {
+  // API responses contain private request context and must never be cached.
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed.' });
@@ -9,26 +15,29 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(503).json({ error: 'AI_NOT_CONFIGURED' });
 
-  const { message, history = [], context = '' } = req.body || {};
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const { message, history = [], context = '' } = body;
   if (typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Please enter a question.' });
   }
-  if (message.length > 1200) {
+  if (message.trim().length > 1200) {
     return res.status(413).json({ error: 'Please keep your question under 1,200 characters.' });
   }
 
+  // Bound history before forwarding it to the model to limit prompt abuse and cost.
   const safeHistory = Array.isArray(history)
     ? history.slice(-8)
         .filter((item) => item && ['user', 'assistant'].includes(item.role) && typeof item.text === 'string')
-        .map((item) => `${item.role === 'assistant' ? 'FYNVERA AI' : 'User'}: ${item.text.slice(0, 1200)}`)
+        .map((item) => `${item.role === 'assistant' ? 'FYNORIX AI' : 'User'}: ${item.text.slice(0, 1200)}`)
     : [];
 
-  const systemInstruction = `You are FYNVERA Guide, a helpful general-purpose AI assistant built into the FYNVERA finance education website. Answer the user's actual question clearly and naturally, not only questions about the website. Support English and Sinhala; reply in the language the user uses. You may explain finance, investing, crypto, stocks, forex, economics, technology, education, writing, and everyday topics. For FYNVERA navigation, explain the relevant existing site features. Be honest when unsure and never invent live prices, breaking news, website features, or facts. You do not have live web browsing or access to the user's private account, portfolio, database, or transactions. Never claim to have checked them. For financial topics, provide balanced educational information, explain material risks, do not promise returns or give personalized buy/sell instructions. Encourage users not to share passwords, API keys, recovery phrases, or sensitive financial information. Keep answers useful and reasonably concise. Current page context: ${String(context).slice(0, 250)}.`;
+  const safeContext = typeof context === 'string' ? context.slice(0, 250) : '';
+  const systemInstruction = `You are FYNORIX Guide, a helpful general-purpose AI assistant built into the FYNORIX finance education website. Answer the user's actual question clearly and naturally, not only questions about the website. Support English and Sinhala; reply in the language the user uses. You may explain finance, investing, crypto, stocks, forex, economics, technology, education, writing, and everyday topics. For FYNVERA navigation, explain the relevant existing site features. Be honest when unsure and never invent live prices, breaking news, website features, or facts. You do not have live web browsing or access to the user's private account, portfolio, database, or transactions. Never claim to have checked them. For financial topics, provide balanced educational information, explain material risks, do not promise returns or give personalized buy/sell instructions. Encourage users not to share passwords, API keys, recovery phrases, or sensitive financial information. Keep answers useful and reasonably concise. Current page context: ${safeContext}.`;
 
   const conversation = [
     ...safeHistory,
     `User: ${message.trim()}`,
-    'FYNVERA AI:'
+    'FYNORIX AI:'
   ].join('\n');
 
   // Gemini 3.8 Flash uses the Interactions API. Do not call the legacy
@@ -102,7 +111,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ reply });
   } catch (error) {
-    console.error('FYNVERA assistant request failed:', error?.name || 'Error', error?.message || 'Unknown error');
+    console.error('FYNORIX assistant request failed:', error?.name || 'Error', error?.message || 'Unknown error');
     return res.status(500).json({
       error: error?.name === 'AbortError'
         ? 'The AI took too long to respond. Please try again.'
