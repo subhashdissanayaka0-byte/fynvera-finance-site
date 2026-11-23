@@ -1884,6 +1884,79 @@ function readFynorixRoute() {
   };
 }
 
+
+const DEFAULT_FYNORIX_APPEARANCE = {
+  theme: 'midnight',
+  fontSize: 16,
+  lineHeight: '1.85',
+  fontFamily: 'sans',
+  contentWidth: 'standard',
+  focusMode: false
+};
+
+function AppearanceSettings({ appearance, onChange, onReset }) {
+  const [open, setOpen] = useState(false);
+  const themes = [
+    { id: 'midnight', label: 'Midnight Navy', swatch: 'linear-gradient(135deg,#06172b,#0b3e5b 58%,#24cbdc)' },
+    { id: 'paper', label: 'Paper Light', swatch: 'linear-gradient(135deg,#ffffff,#e7eff6 58%,#5a9bb7)' },
+    { id: 'ivory', label: 'Warm Ivory', swatch: 'linear-gradient(135deg,#fffaf0,#eadfc9 58%,#b58a55)' },
+    { id: 'forest', label: 'Forest Green', swatch: 'linear-gradient(135deg,#071d1a,#17483a 58%,#55b99a)' },
+    { id: 'slate', label: 'Slate Charcoal', swatch: 'linear-gradient(135deg,#141a22,#303b49 58%,#8aa4bd)' }
+  ];
+  const sizes = [14, 16, 18, 20, 22];
+  const lineHeights = [{ value: '1.6', label: 'Compact' }, { value: '1.85', label: 'Comfort' }, { value: '2.1', label: 'Relaxed' }];
+  const fonts = [{ value: 'sans', label: 'Sans' }, { value: 'serif', label: 'Serif' }, { value: 'system', label: 'System' }];
+  const widths = [{ value: 'narrow', label: 'Narrow' }, { value: 'standard', label: 'Standard' }, { value: 'wide', label: 'Wide' }];
+  return (
+    <div className="appearance-settings">
+      <button type="button" className="appearance-toggle button button-soft" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label="Open display and reading settings">
+        <Icon name="Settings2" size={16}/> <span>Display</span>
+      </button>
+      {open && (
+        <section className="appearance-panel" role="dialog" aria-label="Display and reading settings">
+          <div className="appearance-panel-heading">
+            <div><span className="eyebrow">PERSONALISE FYNORIX</span><h2>Display & Reading</h2><p>Your choices are saved on this device.</p></div>
+            <button type="button" className="icon-button" onClick={() => setOpen(false)} aria-label="Close display settings"><Icon name="X" size={17}/></button>
+          </div>
+          <div className="appearance-setting-group">
+            <strong>Website theme</strong>
+            <div className="appearance-theme-grid">
+              {themes.map((theme) => (
+                <button type="button" key={theme.id} className={`appearance-theme-choice ${appearance.theme === theme.id ? 'active' : ''}`} onClick={() => onChange('theme', theme.id)} aria-pressed={appearance.theme === theme.id}>
+                  <span className="appearance-theme-swatch" style={{ background: theme.swatch }}/>
+                  <span>{theme.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="appearance-setting-group">
+            <div className="appearance-setting-label"><strong>Article text size</strong><span>{appearance.fontSize}px</span></div>
+            <div className="appearance-size-row">
+              {sizes.map((size) => <button type="button" key={size} className={appearance.fontSize === size ? 'active' : ''} onClick={() => onChange('fontSize', size)} aria-pressed={appearance.fontSize === size} aria-label={`Set article text to ${size} pixels`}><b>A</b><small>{size}</small></button>)}
+            </div>
+          </div>
+          <div className="appearance-setting-group">
+            <strong>Line spacing</strong>
+            <div className="appearance-choice-row">{lineHeights.map((item) => <button type="button" key={item.value} className={appearance.lineHeight === item.value ? 'active' : ''} onClick={() => onChange('lineHeight', item.value)} aria-pressed={appearance.lineHeight === item.value}>{item.label}</button>)}</div>
+          </div>
+          <div className="appearance-setting-group">
+            <strong>Reading font</strong>
+            <div className="appearance-choice-row">{fonts.map((item) => <button type="button" key={item.value} className={appearance.fontFamily === item.value ? 'active' : ''} onClick={() => onChange('fontFamily', item.value)} aria-pressed={appearance.fontFamily === item.value}>{item.label}</button>)}</div>
+          </div>
+          <div className="appearance-setting-group">
+            <strong>Article width</strong>
+            <div className="appearance-choice-row">{widths.map((item) => <button type="button" key={item.value} className={appearance.contentWidth === item.value ? 'active' : ''} onClick={() => onChange('contentWidth', item.value)} aria-pressed={appearance.contentWidth === item.value}>{item.label}</button>)}</div>
+          </div>
+          <button type="button" className={`appearance-focus-toggle ${appearance.focusMode ? 'active' : ''}`} onClick={() => onChange('focusMode', !appearance.focusMode)} aria-pressed={appearance.focusMode}>
+            <span><b>Focus reading mode</b><small>Hide the article sidebar while reading</small></span><i>{appearance.focusMode ? 'ON' : 'OFF'}</i>
+          </button>
+          <div className="appearance-panel-footer"><button type="button" className="button button-outline button-small" onClick={onReset}>Reset defaults</button><button type="button" className="button button-primary button-small" onClick={() => setOpen(false)}>Done</button></div>
+        </section>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const initialRoute = readFynorixRoute();
   const [activeView, setActiveView] = useState(initialRoute.view || 'Home');
@@ -1920,12 +1993,33 @@ export default function App() {
   const [portfolio, setPortfolio] = useState(() => loadLocal('portfolio', []));
   const [profile, setProfile] = useState(() => loadLocal('profile', { name: '', country: '', currency: 'USD', experience: 'Beginner', goal: 'Build long-term wealth', riskLevel: 'Moderate', monthlyTarget: '', notes: '' }));
   const [activeWatchMarket, setActiveWatchMarket] = useState(() => loadLocal('marketWatchlist', ['SPX', 'BTC']));
+  const [appearance, setAppearance] = useState(() => ({
+    theme: loadLocal('fynorixAppearanceTheme', DEFAULT_FYNORIX_APPEARANCE.theme),
+    fontSize: Number(loadLocal('fynorixAppearanceFontSize', DEFAULT_FYNORIX_APPEARANCE.fontSize)) || DEFAULT_FYNORIX_APPEARANCE.fontSize,
+    lineHeight: loadLocal('fynorixAppearanceLineHeight', DEFAULT_FYNORIX_APPEARANCE.lineHeight),
+    fontFamily: loadLocal('fynorixAppearanceFontFamily', DEFAULT_FYNORIX_APPEARANCE.fontFamily),
+    contentWidth: loadLocal('fynorixAppearanceContentWidth', DEFAULT_FYNORIX_APPEARANCE.contentWidth),
+    focusMode: loadLocal('fynorixAppearanceFocusMode', DEFAULT_FYNORIX_APPEARANCE.focusMode) === true
+  }));
+
   const [cryptoPrices, setCryptoPrices] = useState({});
   const [cryptoStatus, setCryptoStatus] = useState('connecting');
   const [marketQuotes, setMarketQuotes] = useState({});
   const [marketCatalog, setMarketCatalog] = useState([]);
   const [marketStatus, setMarketStatus] = useState('connecting');
   const [marketFetchedAt, setMarketFetchedAt] = useState(null);
+
+  useEffect(() => {
+    saveLocal('fynorixAppearanceTheme', appearance.theme);
+    saveLocal('fynorixAppearanceFontSize', appearance.fontSize);
+    saveLocal('fynorixAppearanceLineHeight', appearance.lineHeight);
+    saveLocal('fynorixAppearanceFontFamily', appearance.fontFamily);
+    saveLocal('fynorixAppearanceContentWidth', appearance.contentWidth);
+    saveLocal('fynorixAppearanceFocusMode', appearance.focusMode);
+  }, [appearance]);
+
+  const updateAppearance = (key, value) => setAppearance((current) => ({ ...current, [key]: value }));
+  const resetAppearance = () => setAppearance({ ...DEFAULT_FYNORIX_APPEARANCE });
 
   const showToast = (message, type = 'info') => { setToast({ message, type, id: Date.now() }); window.setTimeout(() => setToast((value) => value?.message === message ? null : value), 3800); };
   const navigateCategory = (name, subcategory = 'All') => { setPublicAuthorId(null); setSelectedArticle(null); setWorkspaceOpen(false); setSelectedSubcategory(subcategory || 'All'); setActiveView(name === 'Home' ? 'Home' : name); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -2598,7 +2692,12 @@ export default function App() {
   const calculator = calculatorList.find((item) => item.id === calculatorId) || null;
   const currentCategory = categories.find((item) => item.name === activeView);
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-theme={appearance.theme} data-focus-mode={appearance.focusMode ? 'true' : 'false'} style={{
+      '--reader-font-size': `${appearance.fontSize}px`,
+      '--reader-line-height': appearance.lineHeight,
+      '--reader-font-family': appearance.fontFamily === 'serif' ? 'Georgia, serif' : appearance.fontFamily === 'system' ? 'system-ui, sans-serif' : "'DM Sans', sans-serif",
+      '--reader-content-width': appearance.contentWidth === 'narrow' ? '680px' : appearance.contentWidth === 'wide' ? '960px' : '820px'
+    }}>
       <Header onHome={() => navigateCategory('Home')} onCategory={navigateCategory} onAuth={openAuth} onWorkspace={openWorkspace} onSearch={() => setSearchOpen(true)} user={currentUser} activeView={activeView}/>
       {workspaceOpen ? <div className="workspace-shell"><WorkspaceSidebar active={workspacePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} onNavigate={navigateWorkspace} user={currentUser} mobileOpen={sidebarMobileOpen} onCloseMobile={() => setSidebarMobileOpen(false)}/><div className="workspace-stage"><button className="workspace-mobile-menu button button-soft button-small" onClick={() => setSidebarMobileOpen(true)}><Icon name="Menu" size={16}/> Menu</button><WorkspaceContent key={workspacePage} page={workspacePage} user={currentUser} articles={articles} watchlist={watchlist} marketWatchlist={activeWatchMarket} portfolio={portfolio} profile={profile} onProfileChange={saveProfile} onAvatarChange={openAvatarCrop} onAddHolding={addHolding} onRemoveHolding={removeHolding} onMarketWatchChange={changeMarketWatchlist} onToggleWatch={toggleArticleWatch} onOpenArticle={openArticle} onPublish={publishArticle} onDeleteArticle={deleteArticle} onCalculator={openCalculator} onAuth={openAuth} onRegisterPasskey={handlePasskeyRegister} passkeyBusy={authBusy} onCategory={navigateCategory} showToast={showToast} cryptoPrices={cryptoPrices} cryptoStatus={cryptoStatus} marketQuotes={marketQuotes} marketCatalog={marketCatalog} marketStatus={marketStatus} marketFetchedAt={marketFetchedAt}/></div>{sidebarMobileOpen && <button className="workspace-sidebar-scrim" onClick={() => setSidebarMobileOpen(false)} aria-label="Close sidebar"/>}</div>
       : publicAuthorId ? <PublicAuthorPage key={publicAuthorId} authorId={publicAuthorId} user={currentUser} onAuth={openAuth} onOpenArticle={openArticle} onBack={() => navigateCategory('Home')} showToast={showToast}/>
@@ -2622,6 +2721,7 @@ export default function App() {
         </section>
       </div>}
       <FynorixAssistant activeView={activeView} workspaceOpen={workspaceOpen} workspacePage={workspacePage} articleTitle={selectedArticle?.title} onCategory={navigateCategory} onWorkspace={(page) => navigateWorkspace(page)} onCalculator={openCalculator} onAuth={openAuth}/>
+      <AppearanceSettings appearance={appearance} onChange={updateAppearance} onReset={resetAppearance}/>
       <Toast toast={toast} onClose={() => setToast(null)}/>
     </div>
   );
