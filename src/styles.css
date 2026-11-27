@@ -2584,7 +2584,7 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   --bg: #f1f5f9; --bg-deep: #e7edf3; --panel: #ffffff; --panel-2: #eaf0f5;
   --line: rgba(39,71,100,.16); --line-bright: rgba(18,132,158,.32);
   --text: #1b2b3b; --muted: #52677b; --muted-2: #71859a;
-  --cyan: #087f96; --cyan-2: #076b82; --blue: #245fc0; --green: #16865f; --red: #bd455a;
+  --cyan: #343434; --cyan-2: #171717; --blue: #555555; --green: #666666; --red: #bd455a;
   background: #f1f5f9; color: var(--text);
 }
 .app-shell[data-theme="ivory"] {
@@ -2594,13 +2594,12 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   --cyan: #9a6b2f; --cyan-2: #80531e; --blue: #506f9c; --green: #4d805e; --red: #b64f4b;
   background: #f6f0e5; color: var(--text);
 }
-.app-shell[data-theme="forest"] {
-  --bg: #081c19; --bg-deep: #04120f; --panel: #102b25; --panel-2: #17392f;
-  --line: rgba(104,184,151,.2); --line-bright: rgba(102,214,166,.38);
-  --text: #eaf7ef; --muted: #a5c4b3; --muted-2: #789b88;
-  --cyan: #6ed7aa; --cyan-2: #3eae86; --blue: #82b8e8; --green: #68daa5; --red: #ff9292;
-  background: radial-gradient(ellipse at 70% -20%,rgba(44,125,91,.2),transparent 43%),var(--bg);
-  color: var(--text);
+.app-shell[data-theme="mono"] {
+  --bg: #080808; --bg-deep: #000000; --panel: #171717; --panel-2: #242424;
+  --line: rgba(255,255,255,.14); --line-bright: rgba(255,255,255,.34);
+  --text: #f7f7f7; --muted: #c4c4c4; --muted-2: #929292;
+  --cyan: #eeeeee; --cyan-2: #ffffff; --blue: #bdbdbd; --green: #bdbdbd; --red: #ff9292;
+  background: #080808; color: var(--text);
 }
 .app-shell[data-theme="slate"] {
   --bg: #171d26; --bg-deep: #10151d; --panel: #202a36; --panel-2: #2b3745;
@@ -3199,4 +3198,73 @@ textarea.plain-field { resize: vertical; line-height: 1.6; }
   }
   .app-shell[data-theme="paper"] .nav-category-wrap,
   .app-shell[data-theme="paper"] .more-nav-wrap { border-bottom-color: #edf1f5 !important; }
+}
+
+
+/* Black & White theme: a high-contrast, neutral monochrome reading experience. */
+.app-shell[data-theme="mono"] .site-header,
+.app-shell[data-theme="mono"] .site-footer,
+.app-shell[data-theme="mono"] .panel,
+.app-shell[data-theme="mono"] .card,
+.app-shell[data-theme="mono"] .article-card,
+.app-shell[data-theme="mono"] .workspace-sidebar,
+.app-shell[data-theme="mono"] .appearance-panel,
+.app-shell[data-theme="mono"] .dropdown-menu,
+.app-shell[data-theme="mono"] .modal-card,
+.app-shell[data-theme="mono"] .assistant-panel {
+  background: #111111 !important;
+  color: #f5f5f5 !important;
+  border-color: #3b3b3b !important;
+}
+.app-shell[data-theme="mono"] .main-nav .nav-link,
+.app-shell[data-theme="mono"] .workspace-nav-link,
+.app-shell[data-theme="mono"] .workspace-nav-group-toggle,
+.app-shell[data-theme="mono"] .button-soft,
+.app-shell[data-theme="mono"] .type-pill {
+  color: #eeeeee !important;
+  background: #1b1b1b !important;
+  border-color: #444444 !important;
+}
+.app-shell[data-theme="mono"] .main-nav .nav-link:hover,
+.app-shell[data-theme="mono"] .main-nav .nav-link-active,
+.app-shell[data-theme="mono"] .workspace-nav-link:hover,
+.app-shell[data-theme="mono"] .workspace-nav-active,
+.app-shell[data-theme="mono"] .workspace-nav-group-open > .workspace-nav-group-toggle {
+  color: #080808 !important;
+  background: #f2f2f2 !important;
+  border-color: #f2f2f2 !important;
+}
+.app-shell[data-theme="mono"] button:not(.button-danger):not(.danger-button),
+.app-shell[data-theme="mono"] .button-primary,
+.app-shell[data-theme="mono"] .assistant-input-row button {
+  border-color: #777777;
+}
+.app-shell[data-theme="mono"] input,
+.app-shell[data-theme="mono"] textarea,
+.app-shell[data-theme="mono"] select,
+.app-shell[data-theme="mono"] .input-wrap,
+.app-shell[data-theme="mono"] .plain-field,
+.app-shell[data-theme="mono"] .select-field {
+  color: #f5f5f5 !important;
+  background: #191919 !important;
+  border-color: #555555 !important;
+  color-scheme: dark;
+}
+.app-shell[data-theme="mono"] a,
+.app-shell[data-theme="mono"] .eyebrow,
+.app-shell[data-theme="mono"] .text-accent {
+  color: #eeeeee;
+}
+.app-shell[data-theme="mono"] .live-dot {
+  background: #d8d8d8;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.09);
+}
+.app-shell[data-theme="paper"] {
+  --green: #666666;
+}
+.app-shell[data-theme="paper"] .button-primary,
+.app-shell[data-theme="paper"] .assistant-message-user .assistant-bubble {
+  background: #242424 !important;
+  border-color: #242424 !important;
+  color: #ffffff !important;
 }
