@@ -1886,7 +1886,7 @@ function readFynorixRoute() {
 
 
 const DEFAULT_FYNORIX_APPEARANCE = {
-  theme: 'midnight',
+  theme: 'paper',
   fontSize: 16,
   lineHeight: '1.85',
   fontFamily: 'sans',
@@ -1900,7 +1900,7 @@ function AppearanceSettings({ appearance, onChange, onReset }) {
     { id: 'midnight', label: 'Midnight Navy', swatch: 'linear-gradient(135deg,#06172b,#0b3e5b 58%,#24cbdc)' },
     { id: 'paper', label: 'Paper Light', swatch: 'linear-gradient(135deg,#ffffff,#e7eff6 58%,#5a9bb7)' },
     { id: 'ivory', label: 'Warm Ivory', swatch: 'linear-gradient(135deg,#fffaf0,#eadfc9 58%,#b58a55)' },
-    { id: 'forest', label: 'Forest Green', swatch: 'linear-gradient(135deg,#071d1a,#17483a 58%,#55b99a)' },
+    { id: 'mono', label: 'Black & White', swatch: 'linear-gradient(135deg,#050505,#555555 58%,#ffffff)' },
     { id: 'slate', label: 'Slate Charcoal', swatch: 'linear-gradient(135deg,#141a22,#303b49 58%,#8aa4bd)' }
   ];
   const sizes = [14, 16, 18, 20, 22];
@@ -1994,7 +1994,7 @@ export default function App() {
   const [profile, setProfile] = useState(() => loadLocal('profile', { name: '', country: '', currency: 'USD', experience: 'Beginner', goal: 'Build long-term wealth', riskLevel: 'Moderate', monthlyTarget: '', notes: '' }));
   const [activeWatchMarket, setActiveWatchMarket] = useState(() => loadLocal('marketWatchlist', ['SPX', 'BTC']));
   const [appearance, setAppearance] = useState(() => ({
-    theme: loadLocal('fynorixAppearanceTheme', DEFAULT_FYNORIX_APPEARANCE.theme),
+    theme: (() => { const saved = loadLocal('fynorixAppearanceTheme', DEFAULT_FYNORIX_APPEARANCE.theme); return saved === 'midnight' || saved === 'forest' ? 'paper' : saved; })(),
     fontSize: Number(loadLocal('fynorixAppearanceFontSize', DEFAULT_FYNORIX_APPEARANCE.fontSize)) || DEFAULT_FYNORIX_APPEARANCE.fontSize,
     lineHeight: loadLocal('fynorixAppearanceLineHeight', DEFAULT_FYNORIX_APPEARANCE.lineHeight),
     fontFamily: loadLocal('fynorixAppearanceFontFamily', DEFAULT_FYNORIX_APPEARANCE.fontFamily),
